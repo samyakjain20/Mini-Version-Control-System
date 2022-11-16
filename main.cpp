@@ -22,8 +22,8 @@ bool validPath(string &path){
         return true;  
 }
 
-bool checkVcs(){   
-    string path = "./vcs";
+bool checkVcs(){
+    string path = "./.vcs";
     char resPath[300];
     realpath(path.c_str(), resPath); // absolute path
     string temp(resPath);
@@ -36,7 +36,7 @@ bool checkVcs(){
     return vcs = true;
 }
 
-void handleInit(){ 
+void handleInit(){
     // Creating a directory
     if(checkVcs()){
         cout << "VCS initialised already...\n";
@@ -110,29 +110,25 @@ vector<string> parseCommands(string cmnd){
     return args;
 }
 
-void checkVcsStatus(){
-    // to check if vcs dir is created - implies that vcs init is done
-}
-
 int main(){
-    checkVcsStatus();
-    while(1){
-        string cmnd;
-        cout << ">> ";
-        getline(cin, cmnd, '\n');
-        // cin >> cmnd;
+    checkVcs();
 
-        vector<string> cmndArgs = parseCommands(cmnd);
-        if(cmndArgs[0] == "vcs" && cmndArgs[1] == "init")
-            handleInit(); // passing path as argument
-        else if(cmndArgs[0] == "validate" ){
-            validPath(cmndArgs[1]); // passing path as argument
-        }
-        else if(cmndArgs[0] == ":exit")
-            break;
-        else
-            cout << "Invalid Command\n";
+    // for now we are taking command line input
+    string cmnd;
+    cout << ">> ";
+    getline(cin, cmnd, '\n');
+    // cin >> cmnd;
 
+    vector<string> cmndArgs = parseCommands(cmnd);
+    if(cmndArgs[0] == "vcs" && cmndArgs[1] == "init")
+        handleInit(); // passing path as argument
+    else if(cmndArgs[0] == "validate" ){
+        validPath(cmndArgs[1]); // passing path as argument
     }
+    else if(cmndArgs[0] == ":exit")
+        return 0;
+    else
+        cout << "Invalid Command\n";
+
     return 0;
 }
