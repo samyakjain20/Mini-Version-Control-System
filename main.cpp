@@ -1,9 +1,14 @@
-namespace add{
-    #include<bits/stdc++.h>
+#include<bits/stdc++.h>
     #include <dirent.h>
     #include <sys/stat.h> // imported to create directory
     #include <sys/types.h> // imported to create directory
     #include <fstream> // filehandling
+// namespace add{
+    // #include<bits/stdc++.h>
+    // #include <dirent.h>
+    // #include <sys/stat.h> // imported to create directory
+    // #include <sys/types.h> // imported to create directory
+    // #include <fstream> // filehandling
     using namespace std;
 
     bool vcs = false; // indicating if there is vcsfolder cerated
@@ -250,4 +255,4 @@ namespace add{
 
         return 0;
 }
-}
+// }
