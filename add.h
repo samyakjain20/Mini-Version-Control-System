@@ -1,6 +1,4 @@
-
-namespace add{
-    #include <iostream>
+ #include <iostream>
     #include <dirent.h>
     #include <filesystem>
     #include <string>
@@ -21,6 +19,31 @@ namespace add{
     #include <sys/types.h>
     #include <sys/stat.h>
     #include <utility>
+    // using namespace std;
+
+
+namespace add{
+    // #include <iostream>
+    // #include <dirent.h>
+    // #include <filesystem>
+    // #include <string>
+    // #include <string.h>
+    // // #include <bits/stdc++.h>
+    // #include <sys/stat.h>
+    // #include <dirent.h>
+    // #include <fstream>
+    // #include <stdio.h>
+    // #include <iostream>
+    // #include <dirent.h>
+    // #include <vector>
+    // #include <string>
+    // #include <cstring>
+    // #include <unistd.h>
+    // #include <fcntl.h>
+    // #include <stdlib.h>
+    // #include <sys/types.h>
+    // #include <sys/stat.h>
+    // #include <utility>
     using namespace std;
     void copydirectory(string path1, string path2);
     void copyfile(string path1, string path2);
