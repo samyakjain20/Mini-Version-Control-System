@@ -1,49 +1,29 @@
- #include <iostream>
-    #include <dirent.h>
-    #include <filesystem>
-    #include <string>
-    #include <string.h>
-    // #include <bits/stdc++.h>
-    #include <sys/stat.h>
-    #include <dirent.h>
-    #include <fstream>
-    #include <stdio.h>
-    #include <iostream>
-    #include <dirent.h>
-    #include <vector>
-    #include <string>
-    #include <cstring>
-    #include <unistd.h>
-    #include <fcntl.h>
-    #include <stdlib.h>
-    #include <sys/types.h>
-    #include <sys/stat.h>
-    #include <utility>
-    // using namespace std;
+#include <iostream>
+#include <dirent.h>
+#include <filesystem>
+#include <string>
+#include <string.h>
+// #include <bits/stdc++.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <fstream>
+#include <stdio.h>
+#include <iostream>
+#include <dirent.h>
+#include <vector>
+#include <string>
+#include <cstring>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <utility>
+#include <openssl/sha.h>
+// using namespace std;
 
-
-namespace add{
-    // #include <iostream>
-    // #include <dirent.h>
-    // #include <filesystem>
-    // #include <string>
-    // #include <string.h>
-    // // #include <bits/stdc++.h>
-    // #include <sys/stat.h>
-    // #include <dirent.h>
-    // #include <fstream>
-    // #include <stdio.h>
-    // #include <iostream>
-    // #include <dirent.h>
-    // #include <vector>
-    // #include <string>
-    // #include <cstring>
-    // #include <unistd.h>
-    // #include <fcntl.h>
-    // #include <stdlib.h>
-    // #include <sys/types.h>
-    // #include <sys/stat.h>
-    // #include <utility>
+namespace add
+{
     using namespace std;
     void copydirectory(string path1, string path2);
     void copyfile(string path1, string path2);
@@ -51,6 +31,50 @@ namespace add{
     namespace fs = std::filesystem;
     string vcspath = "./.vcs"; // add .vcs
     
+    void calculateFileSHA(string fileLoc)
+    {
+        unsigned char completeFileSHA[SHA_DIGEST_LENGTH];
+        int i;
+        FILE *inFile = fopen(fileLoc.c_str(), "rb");
+        SHA_CTX shaContext, shaPieceContext;
+        int bytes;
+        // 524288
+        unsigned char data[524288];
+
+        if (inFile == NULL)
+        {
+            cout << "Cannot open " << fileLoc << endl;
+            return;
+        }
+
+        // vector<string> chunkSHA1;
+        int chunks = 0;
+        SHA1_Init(&shaContext);
+        while ((bytes = fread(data, 1, 524288, inFile)) != 0)
+        {
+            SHA1_Update(&shaContext, data, bytes);
+        }
+        SHA1_Final(completeFileSHA, &shaContext);
+        fclose(inFile);
+        stringstream ss;
+        for (int i = 0; i < SHA_DIGEST_LENGTH; i++)
+        {
+            ss << hex << setw(2) << setfill('0') << (int)completeFileSHA[i];
+        }
+        string fullFileSHA1 = ss.str();
+        cout << fileLoc << " sha is " << fullFileSHA1 << endl;
+        
+
+        string appendData = "\n" + fileLoc + "$" + fullFileSHA1;
+        string cwd = fs::current_path();
+        string version;
+        ofstream vfile;
+        vfile.open("./.vcs/version.info", std::ios_base::app); // append instead of overwrite
+        vfile << appendData;
+        vfile.close();
+    }
+
+
     int createdir(string path1)
     {
         int check;
@@ -158,8 +182,9 @@ namespace add{
         string cwd = fs::current_path();
         cout << path1 << endl;
         cout << path2 << endl;
-
+        calculateFileSHA(path1);
         char buffer[1000];
+        memset(&buffer[0], 0, sizeof(buffer));
         int filecheck1, filecheck2;
         struct stat buff;
         int exists = stat(path1.c_str(), &buff);
@@ -180,10 +205,12 @@ namespace add{
             cout << "error" << endl;
             return;
         }
-
-        while (read(filecheck1, buffer, 1000))
+        int a = 0;
+        while (a = read(filecheck1, buffer, 1000))
         {
-            write(filecheck2, buffer, 1000);
+            if(a != -1)
+                write(filecheck2, buffer, a);
+            else break;
         }
         chmod(path2.c_str(), buff.st_mode);
 
@@ -191,6 +218,32 @@ namespace add{
 
         close(filecheck1);
         close(filecheck2);
+        // fstream f1;
+        // fstream f2;
+        // string ch;
+    
+        // // opening first file to read the content
+        // f1.open(path1, ios::in);
+    
+        // // opening second file to write
+        // // the content copied from
+        // // first file
+        // f2.open(path2, ios::out);
+    
+        // while (!f1.eof()) {
+    
+        //     // extracting the content of
+        //     // first file line by line
+        //     getline(f1, ch);
+    
+        //     // writing content to second
+        //     // file line by line
+        //     f2 << ch << endl;
+        // }
+    
+        // // closing the files
+        // f1.close();
+        // f2.close();
     }
     void copydirectory(string path1, string path2)
     {
@@ -284,9 +337,10 @@ namespace add{
             ofstream vfile("./.vcs/version.info");
             vfile << "0";
             vfile.close();
+            cout << "mkdir done..." << endl;
             DIR *folder = opendir(cwd.c_str());
             if (folder == NULL)
-                return;
+                return ;
             // reading files in a directory
             struct dirent *file = readdir(folder);
             while (file != NULL)
@@ -323,17 +377,3 @@ namespace add{
 
     }
 }
-
-    // int main()
-    // {
-    //     // string vcspath = "./.vcs"; // add .vcs
-    //     // string cwd = fs::current_path();
-
-    //     // create_dir_structure("./folder1/folder2/folder3/folder4");
-    //     // return 0;
-    //     // copyfile("./folder1/folder2/folder3/folder4/m5.txt", "./.vcs/0/folder1/folder2/folder3/folder4/m5.txt");
-    //     addFile("Folder1/demo1.txt", "0");
-
-        
-    //     return 0;
-    // }
