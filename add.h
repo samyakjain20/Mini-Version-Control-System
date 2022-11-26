@@ -34,9 +34,8 @@ namespace add
     void calculateFileSHA(string fileLoc)
     {
         unsigned char completeFileSHA[SHA_DIGEST_LENGTH];
-        int i;
         FILE *inFile = fopen(fileLoc.c_str(), "rb");
-        SHA_CTX shaContext, shaPieceContext;
+        SHA_CTX shaContext;
         int bytes;
         // 524288
         unsigned char data[524288];
@@ -48,7 +47,6 @@ namespace add
         }
 
         // vector<string> chunkSHA1;
-        int chunks = 0;
         SHA1_Init(&shaContext);
         while ((bytes = fread(data, 1, 524288, inFile)) != 0)
         {
@@ -104,7 +102,7 @@ namespace add
         {
 
             if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vscode") == 0 || strcmp(file->d_name, "main.cpp") == 0
-            || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0)
+            || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "commit.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0)
                 cout << "ignore" << endl;
             else
             {
@@ -143,7 +141,7 @@ namespace add
         cout << "Absolute Path: " << abs_path << endl;
         vector<string> directories_in_path;
         string temp;
-        for (int i = cwd.size() + 1; i < abs_path.size(); i++)
+        for (int i = cwd.size() + 1; i < (int)abs_path.size(); i++)
         {
             if (abs_path[i] != '/')
             {
@@ -156,7 +154,6 @@ namespace add
             }
         }
         string temp_path = vcspath + "/" + version;
-        int count = 0;
         for (auto i : directories_in_path)
         {
             cout << "Here " << i << endl;
@@ -188,7 +185,7 @@ namespace add
         memset(&buffer[0], 0, sizeof(buffer));
         int filecheck1, filecheck2;
         struct stat buff;
-        int exists = stat(path1.c_str(), &buff);
+        stat(path1.c_str(), &buff);
 
         // opening the first file
         filecheck1 = open(path1.c_str(), O_RDONLY);
@@ -207,7 +204,7 @@ namespace add
             return;
         }
         int a = 0;
-        while (a = read(filecheck1, buffer, 1000))
+        while ((a = read(filecheck1, buffer, 1000)))
         {
             if(a != -1)
                 write(filecheck2, buffer, a);
@@ -250,7 +247,7 @@ namespace add
     {
         string cwd = fs::current_path();
         struct stat mbuff;
-        int exists = stat(path1.c_str(), &mbuff);
+        stat(path1.c_str(), &mbuff);
         // opening the folder
         DIR *folder = opendir(path1.c_str());
         // creating a directory with the same name at specified vcspath
@@ -288,7 +285,7 @@ namespace add
                     PAIR.first = path1 + "/" + file->d_name;
                     PAIR.second = path2 + "/" + file->d_name;
                     struct stat buff;
-                    int exists = stat(path1.c_str(), &buff);
+                    stat(path1.c_str(), &buff);
                     copydirectory(PAIR.first, PAIR.second);
                 }
                 else
@@ -297,7 +294,7 @@ namespace add
                     PAIR.first = path1 + "/" + file->d_name;
                     PAIR.second = path2 + "/" + file->d_name;
                     struct stat buff;
-                    int exists = stat(path1.c_str(), &buff);
+                    stat(path1.c_str(), &buff);
                     copyfile(PAIR.first, PAIR.second);
                 }
             }
@@ -348,7 +345,7 @@ namespace add
             {
 
                 if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vscode") == 0 || strcmp(file->d_name, "main.cpp") == 0
-                || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0)
+                || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "commit.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0)
                     cout << "ignore" << endl;
                 else
                 {
