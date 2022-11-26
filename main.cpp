@@ -3,9 +3,11 @@
 #include <sys/stat.h> // imported to create directory
 #include <sys/types.h> // imported to create directory
 #include <fstream> // filehandling
-#include <openssl/sha.h>
+#include <openssl/sha.h> // SHA 
+#include <ctime>  // using for timestamp
 #include "add.h"
 #include "diff.h"
+#include "status.h"
 using namespace std;
 
 bool vcs = false; // indicating if there is vcsfolder cerated
@@ -144,7 +146,7 @@ string calculateFileSHA(string cmtData){
     return commitSHA;
 }
 
-void handleCommit(){
+void handleCommit(string commitMsg){
     // will create patch
     if(versionNo > 0){
         string path1 = "./.vcs/" + to_string(versionNo - 1) + "/", path2 = "./.vcs/" + to_string(versionNo) + "/";
@@ -165,7 +167,7 @@ void handleCommit(){
         while( (sd = readdir(dir)) != NULL ){
             string currFile = sd->d_name;
             // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name); 
-            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
+            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
                 continue;
             else
                 latest.insert(sd->d_name);
@@ -180,7 +182,7 @@ void handleCommit(){
         while( (sd = readdir(dir)) != NULL ){
             string currFile = sd->d_name;
             // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name); 
-            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
+            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp")
                 continue;
             else
                 old.insert(sd->d_name);
@@ -265,11 +267,14 @@ void handleCommit(){
 
     string commitHex = calculateFileSHA(to_string(versionNo-1)+"FIRST COMMIT"+currHex);
 
+    auto t = std::chrono::system_clock::now(); 
+    std::time_t currTime = std::chrono::system_clock::to_time_t(t);
+
     struct commitData cd;
 	cd.commitNo = versionNo-1;
 	strcpy(cd.commitSHA, commitHex.c_str());
-    strcpy(cd.message, "FIRST COMMIT");
-    strcpy(cd.timeStamp, "Thu Nov 24 15:47:45 2022 +0530");
+    strcpy(cd.message, commitMsg.c_str());
+    strcpy(cd.timeStamp, std::ctime(&currTime));
     strcpy(cd.hexCode, currHex.c_str());
     commitHexMap[commitHex] = versionNo-1;
     commitInfoMap[versionNo-1] = cd;
@@ -333,13 +338,15 @@ int main(){
         validPath(cmndArgs[1]); // passing path as argument
     }
     else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "commit")
-        handleCommit(); // passing path as argument
+        handleCommit(cmndArgs[2]); // passing path as argument
     else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "add" && cmndArgs[2] == ".")
         add::addComplete(); // passing path as argument
-    else if(cmndArgs[0] == "diff")
+    else if(cmndArgs[0] == "vcs" &&  cmndArgs[0] == "diff")
         diff::difference_between_two(cmndArgs[1]);
-    else if(cmndArgs[0] == "log")
+    else if(cmndArgs[0] == "vcs" && cmndArgs[0] == "log")
         log();
+    else if(cmndArgs[0] == "vcs" && cmndArgs[0] == "status")
+        status::vcsStatus();
     else if(cmndArgs[0] == ":exit")
         return 0;
     else
