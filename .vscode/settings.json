@@ -8,6 +8,8 @@
         "iostream": "cpp",
         "cstring": "cpp",
         "fstream": "cpp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp"
     }
 }

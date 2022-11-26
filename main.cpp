@@ -33,15 +33,15 @@ struct commitData{
     int commitNo;
     char commitSHA[50], message[200], timeStamp[50], hexCode[10];
 };
+
 map<int, commitData> commitInfoMap; // <commitNo, struct commitData>
 map<string, int> commitHexMap; // <hex, commitNo> 
 void loadCommitData(){
-    cout << "Inside commit Data load\n";
+    // cout << "Inside commit Data load\n";
     FILE *commitFile;
     commitFile = fopen("./.vcs/commit.info", "r");
 
     commitData cmt;
-    int ctr = 0;
     while (fread(&cmt, sizeof(commitData), 1, commitFile)){
         commitInfoMap[cmt.commitNo] = cmt;
         commitHexMap[cmt.hexCode] = cmt.commitNo;
@@ -80,7 +80,6 @@ void handleInit(){
         return;
     }
     int err = mkdir(".vcs", 0777);
-    bool tempFlag = false;
     if (err != -1){
         string temp = "./.vcs/" + to_string(versionNo);
         if (mkdir(temp.c_str(), 0777) == -1){
@@ -103,7 +102,6 @@ void handleInit(){
     fstream file2(fileName.c_str(), ios::in | ios:: app);
     file2.close();
 }
-
 
 string generateHex(){
     char chars[]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
@@ -131,7 +129,6 @@ void createForPatch(string path1, string path2){
 
 string calculateFileSHA(string cmtData){
     unsigned char completeFileSHA[SHA_DIGEST_LENGTH];
-    int i;
     SHA_CTX shaContext;
 
     SHA1_Init(&shaContext);
@@ -167,7 +164,7 @@ void handleCommit(string commitMsg){
         while( (sd = readdir(dir)) != NULL ){
             string currFile = sd->d_name;
             // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name); 
-            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
+            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
                 continue;
             else
                 latest.insert(sd->d_name);
@@ -182,7 +179,7 @@ void handleCommit(string commitMsg){
         while( (sd = readdir(dir)) != NULL ){
             string currFile = sd->d_name;
             // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name); 
-            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp")
+            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp")
                 continue;
             else
                 old.insert(sd->d_name);
@@ -193,7 +190,7 @@ void handleCommit(string commitMsg){
         for(auto it1 : old){
             struct stat sfile;
             string currFile = path1  + it1;
-            int a = stat(currFile.c_str(), &sfile);
+            stat(currFile.c_str(), &sfile);
 
             if((sfile.st_mode & S_IFDIR)){
                 cout << currFile << " ";
@@ -201,6 +198,7 @@ void handleCommit(string commitMsg){
                 struct dirent *sd;
                 dir = opendir(currFile.c_str());
                 old.erase(old.find(it1));
+                string tempPath = it1;
 
                 while( (sd = readdir(dir)) != NULL )
                     if(strcmp(sd->d_name, "..") == 0 || strcmp(sd->d_name, ".") == 0)
@@ -215,7 +213,7 @@ void handleCommit(string commitMsg){
         for(auto it2 : latest){
             struct stat sfile;
             string currFile = path2  + it2;
-            int a = stat(currFile.c_str(), &sfile);
+            stat(currFile.c_str(), &sfile);
 
             if((sfile.st_mode & S_IFDIR)){
                 cout << currFile << " ";
@@ -240,7 +238,7 @@ void handleCommit(string commitMsg){
         for(auto it2 : latest)
             cout << it2 << "\n"; 
         cout << endl;
-        auto it1 = old.begin(), it2 = latest.begin();
+        
         for(auto it1 : old){
             auto it3 = latest.find(it1);
             if(it3 != latest.end())
@@ -265,16 +263,18 @@ void handleCommit(string commitMsg){
     while(commitHexMap.find(currHex) != commitHexMap.end())
         currHex = generateHex();
 
-    string commitHex = calculateFileSHA(to_string(versionNo-1)+"FIRST COMMIT"+currHex);
+    string commitHex = calculateFileSHA(to_string(versionNo-1) + commitMsg + currHex);
 
     auto t = std::chrono::system_clock::now(); 
     std::time_t currTime = std::chrono::system_clock::to_time_t(t);
 
     struct commitData cd;
+    string timeStamp(std::ctime(&currTime));
+    cout << endl << timeStamp << endl;
 	cd.commitNo = versionNo-1;
 	strcpy(cd.commitSHA, commitHex.c_str());
     strcpy(cd.message, commitMsg.c_str());
-    strcpy(cd.timeStamp, std::ctime(&currTime));
+    strcpy(cd.timeStamp, timeStamp.c_str());
     strcpy(cd.hexCode, currHex.c_str());
     commitHexMap[commitHex] = versionNo-1;
     commitInfoMap[versionNo-1] = cd;
@@ -285,8 +285,7 @@ void handleCommit(string commitMsg){
 		cout << "Invalid file" << endl;
 		return;
 	}
-	fwrite(&cd, sizeof(struct commitData), 1, commitFile);
-	if(fwrite == 0) {
+	if(	fwrite(&cd, sizeof(struct commitData), 1, commitFile) == 0) {
 		string msg = "commit File Handling Error!!\n";
 		cout << msg << endl;
 	}
@@ -297,11 +296,7 @@ void handleCommit(string commitMsg){
 void log(){
     for(auto it = commitInfoMap.begin(); it != commitInfoMap.end(); it++){
         struct commitData cmt = it->second;
-        cout << "commit Number: " << cmt.commitNo << " ";
-    	cout << "commit " << cmt.commitSHA << " ";
-        cout << "date: " << cmt.timeStamp << " ";
-        cout << "message: " << cmt.message << " ";
-        cout << "hexcode: " << cmt.hexCode << endl;
+        cout << "commit " << cmt.commitSHA << endl <<  "Date: " << cmt.timeStamp  << "\t" << cmt.message << "\n\n";
     }
 }
 
@@ -321,32 +316,36 @@ vector<string> parseCommands(string cmnd){
     return args;
 }
 
-int main(){
+int main(int argc, char *argv[]){
+    string cmnd = "";
+    for(int i= 1 ; i < argc; i++){
+        string temp(argv[i]);
+        cmnd += temp + " ";
+    }
+    cmnd = cmnd.substr(0, cmnd.size() - 1);
+
     checkVcs();
-    cout << "Hello\n";
-
-    // for now we are taking command line input
-    string cmnd;
-    cout << ">> ";
-    getline(cin, cmnd, '\n');
-    // cin >> cmnd;
-
+ 
     vector<string> cmndArgs = parseCommands(cmnd);
     if(cmndArgs[0] == "vcs" && cmndArgs[1] == "init")
         handleInit(); // passing path as argument
     else if(cmndArgs[0] == "validate" ){
         validPath(cmndArgs[1]); // passing path as argument
     }
-    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "commit")
-        handleCommit(cmndArgs[2]); // passing path as argument
-    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "add" && cmndArgs[2] == ".")
+    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "commit"){
+        string commitMsg = "";
+        for(int i = 2; i < (int)cmndArgs.size(); i++)
+            commitMsg += cmndArgs[i] + " ";
+        handleCommit(commitMsg.substr(0, commitMsg.size() - 1)); // passing path as argument
+    }
+    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "add" && cmndArgs.size() > 2 && cmndArgs[2] == ".")
         add::addComplete(); // passing path as argument
-    else if(cmndArgs[0] == "vcs" &&  cmndArgs[0] == "diff")
+    else if(cmndArgs[0] == "vcs" &&  cmndArgs[1] == "diff")
         diff::difference_between_two(cmndArgs[1]);
-    else if(cmndArgs[0] == "vcs" && cmndArgs[0] == "log")
+    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "log")
         log();
-    else if(cmndArgs[0] == "vcs" && cmndArgs[0] == "status")
-        status::vcsStatus();
+    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "status")
+        status::vcsCmndStatus();
     else if(cmndArgs[0] == ":exit")
         return 0;
     else

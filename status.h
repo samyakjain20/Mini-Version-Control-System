@@ -32,9 +32,8 @@ namespace status{
     void getCurrentFileSHA(string fileLoc)
     {
         unsigned char completeFileSHA[SHA_DIGEST_LENGTH];
-        int i;
         FILE *inFile = fopen(fileLoc.c_str(), "rb");
-        SHA_CTX shaContext, shaPieceContext;
+        SHA_CTX shaContext;
         int bytes;
         unsigned char data[524288];
 
@@ -93,8 +92,6 @@ namespace status{
         }
     }
 
-
-
     void traverseFiles(string cwd) {
         // get current files SHA
         DIR *folder = opendir(cwd.c_str());
@@ -105,7 +102,8 @@ namespace status{
         // reading files in a directory
         struct dirent *file = readdir(folder);
         while (file != NULL){
-            if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, "main.cpp") == 0 || strcmp(file->d_name, ".vscode") == 0)
+            if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vscode") == 0 || strcmp(file->d_name, "main.cpp") == 0
+            || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "commit.h") == 0  || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0)
                 cout << "ignore" << endl;
             else
             {
@@ -188,7 +186,7 @@ namespace status{
 
     }
 
-    void vcsStatus(){
+    void vcsCmndStatus(){
         getPrevFilesSHA();
         string cwd = fs::current_path();
         traverseFiles(cwd);
