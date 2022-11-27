@@ -285,7 +285,7 @@ namespace rollback
         }
     }
 
-    void rollback(string version_no, string curr_path)
+    void rollback(string version_no, string curr_path, int totalCommitsByFar)
     {
         string version_path = "./.vcs/" + version_no + "/";
 

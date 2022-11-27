@@ -21,7 +21,7 @@ bool validPath(string &path){
     realpath(path.c_str(), resPath); // absolute path
     string temp(resPath);
     path = temp;
-    cout << path <<"\n";
+    // cout << path <<"\n";
 
     struct stat sfile;
     int exist = stat(path.c_str(), &sfile);
@@ -48,7 +48,8 @@ void loadCommitData(){
     while (fread(&cmt, sizeof(commitData), 1, commitFile)){
         commitInfoMap[cmt.commitNo] = cmt;
         commitHexMap[cmt.hexCode] = cmt.commitNo;
-        // cout << c.commitNo << " " << c.message << endl;
+
+        // cout << cmt.commitNo << " " << cmt.hexCode << " " << cmt.message << endl;
     }
     fclose(commitFile);
 }
@@ -121,8 +122,8 @@ void createForPatch(string path1, string path2){
     int found = path1.find_last_of(".");
     filename = path1.substr(0, found);
 
-    cout<<filename<<endl;
-    cout << path1 << " " << path2 << "  "<< filename<<endl;
+    // cout<<filename<<endl;
+    // cout << path1 << " " << path2 << "  "<< filename<<endl;
     command = command + path2 + " " + path1 + " >> " + path1+".patch";
     system(command.c_str());
     string remove_command = "rm " + path1;
@@ -142,7 +143,7 @@ string calculateFileSHA(string cmtData){
         ss << hex << setw(2) << setfill('0') << (int)completeFileSHA[i];
 
     string commitSHA = ss.str();
-    cout << commitSHA << endl;
+    // cout << commitSHA << endl;
     return commitSHA;
 }
 
@@ -165,7 +166,7 @@ void getFileRecursive(vector<string> &st, string path, string dirName){
             // cout << currFile << endl;
 
             if (fs::is_directory(currFile.c_str())){
-                cout << "recur " << dirName + "/" + sd->d_name << endl; 
+                // cout << "recur " << dirName + "/" + sd->d_name << endl; 
                 getFileRecursive(st, path, dirName + "/" + sd->d_name);
             }
             else 
@@ -178,7 +179,7 @@ void handleCommit(string commitMsg){
     // will create patch
     if (versionNo > 0){
         string path1 = "./.vcs/" + to_string(versionNo - 1) + "/", path2 = "./.vcs/" + to_string(versionNo) + "/";
-        cout << path1 << " " << path2 << endl;
+        // cout << path1 << " " << path2 << endl;
 
         DIR *dir1, *dir2, *dir;
         struct dirent *sd;
@@ -206,7 +207,7 @@ void handleCommit(string commitMsg){
                 else
                     latest.push_back(sd->d_name);
             }
-            cout << "latest " << sd->d_name << endl;
+            // cout << "latest " << sd->d_name << endl;
         }
         if (latest.empty()){
             cout << "Nothing to commit..\n";
@@ -228,16 +229,17 @@ void handleCommit(string commitMsg){
                     getFileRecursive(old, path1, sd->d_name);
                 else
                     old.push_back(sd->d_name);
-            }cout << "old " << sd->d_name << endl;
+            }
+            // cout << "old " << sd->d_name << endl;
         }
 
-        cout << "out of dir thing\n\n";
+        // cout << "out of dir thing\n\n";
 
-        for (auto it1 : old)
-            cout << it1 << "\n";
-        for (auto it2 : latest)
-            cout << it2 << "\n";
-        cout << endl;
+        // for (auto it1 : old)
+        //     cout << it1 << "\n";
+        // for (auto it2 : latest)
+        //     cout << it2 << "\n";
+        // cout << endl;
 
         for (auto it1 : old){
             auto it3 = find(latest.begin(), latest.end(), it1);
@@ -271,8 +273,7 @@ void handleCommit(string commitMsg){
 
     struct commitData cd;
     string timeStamp(std::ctime(&currTime));
-    cout << endl
-         << timeStamp << endl;
+    // cout << endl << timeStamp << endl;
     cd.commitNo = versionNo - 1;
     strcpy(cd.commitSHA, commitHex.c_str());
     strcpy(cd.message, commitMsg.c_str());
@@ -294,12 +295,12 @@ void handleCommit(string commitMsg){
         cout << msg << endl;
     }
     fclose(commitFile);
-    cout << "Commit " << versionNo - 1 << " is added with " << commitHex << " .\n";
+    cout << "\nCommit " << versionNo - 1 << " is added with " << commitHex << " .\n";
 }
 void log(){
     for(auto it = commitInfoMap.begin(); it != commitInfoMap.end(); it++){
         struct commitData cmt = it->second;
-        cout << "commit " << cmt.commitSHA << endl <<  "Date: " << cmt.timeStamp  << "\t" << cmt.message << "\n\n";
+        cout << "commit " << cmt.commitSHA << endl <<  "Date: " << cmt.timeStamp <<  "Commit Id: " << cmt.hexCode << endl << "\t" << cmt.message << "\n\n";
     }
 }
 
@@ -330,28 +331,56 @@ int main(int argc, char *argv[]){
     checkVcs();
  
     vector<string> cmndArgs = parseCommands(cmnd);
-    if(cmndArgs[0] == "vcs" && cmndArgs[1] == "init")
+    if(cmndArgs[0] == "init")
         handleInit(); // passing path as argument
     else if(cmndArgs[0] == "validate" ){
         validPath(cmndArgs[1]); // passing path as argument
     }
-    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "commit"){
+    else if(!vcs && cmndArgs[0] == "commit")
+        cout << "VCS not initialized\n";
+    else if(vcs && cmndArgs[0] == "commit"){
         string commitMsg = "";
-        for(int i = 2; i < (int)cmndArgs.size(); i++)
+        for(int i = 1; i < (int)cmndArgs.size(); i++)
             commitMsg += cmndArgs[i] + " ";
         handleCommit(commitMsg.substr(0, commitMsg.size() - 1)); // passing path as argument
+        cout << "Commit done successfully!\n";
     }
-    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "add" && cmndArgs.size() > 2 && cmndArgs[2] == ".")
-        add::addComplete(); // passing path as argument
-    else if(cmndArgs[0] == "vcs" &&  cmndArgs[1] == "diff")
+    else if(!vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
+        cout << "VCS not initialized\n";
+    else if(vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1){
+        for(int i = 1; i < (int)cmndArgs.size(); i++)
+            add::addComplete(cmndArgs[i]);
+    }
+    else if(!vcs && cmndArgs[0] == "diff")
+        cout << "VCS not initialized\n";
+    else if(vcs && cmndArgs[0] == "diff")
         diff::difference_between_two(cmndArgs[1]);
-    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "log")
+    else if(!vcs && cmndArgs[0] == "log")
+        cout << "VCS not initialized\n";
+    else if(vcs && cmndArgs[0] == "log")
         log();
-    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "status")
+    else if(!vcs && cmndArgs[0] == "status")
+        cout << "VCS not initialized\n";
+    else if(vcs && cmndArgs[0] == "status")
         status::vcsCmndStatus();
-    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "rollback")
-        rollback::rollback(cmndArgs[2], "./");
-    else if(cmndArgs[0] == ":exit")
+    else if(!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() > 1)
+        cout << "VCS not initialized\n";
+    else if(vcs && cmndArgs[0] == "rollback" && cmndArgs.size() > 1){
+        // string tempPath = "./.vcs/" + to_string(versionNo);
+        // if(!(fs::is_empty(tempPath)){
+        //     cout << "Working directory not clean, "
+        // }
+        if(commitHexMap.find(cmndArgs[1]) == commitHexMap.end()){
+            cout << "No such commit id found\n";
+            return 0;
+        }
+        cout << "Commiting current directory status before rolling back\n";
+        add::addComplete(".");
+        handleCommit("commiting before rollback");
+        rollback::rollback(to_string(commitHexMap[cmndArgs[1]]), "./", versionNo);
+        cout << "Rollback done to commit " << cmndArgs[1] << endl;
+    }
+    else if(vcs && cmndArgs[0] == ":exit")
         return 0;
     else
         cout << "Invalid Command\n";

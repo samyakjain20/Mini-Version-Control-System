@@ -24,6 +24,7 @@
 
 namespace add
 {
+    //tracked_current, tracked_history
     using namespace std;
     void copydirectory(string path1, string path2);
     void copyfile(string path1, string path2);
@@ -60,14 +61,14 @@ namespace add
             ss << hex << setw(2) << setfill('0') << (int)completeFileSHA[i];
         }
         string fullFileSHA1 = ss.str();
-        cout << fileLoc << " sha is " << fullFileSHA1 << endl;
+        // cout << fileLoc << " sha is " << fullFileSHA1 << endl;
         
 
-        string appendData = "\n" + fileLoc + "$" + fullFileSHA1;
+        string appendData = fileLoc + "$" + fullFileSHA1 + "\n";
         string cwd = fs::current_path();
         string version;
         ofstream vfile;
-        vfile.open("./.vcs/version.info", std::ios_base::app); // append instead of overwrite
+        vfile.open("./.vcs/tracked_current.txt", std::ios_base::app); // append instead of overwrite
         vfile << appendData;
         vfile.close();
     }
@@ -82,9 +83,10 @@ namespace add
         else
             return -1;
     }
-    void copy_version()
+    void copy_version(string path)
     {
         string cwd = fs::current_path();
+        cwd += "/"+path;
         string version;
         // string ver=to_string(version);
         // string command1="mkdir  ./.vcs/"+ver;
@@ -100,28 +102,32 @@ namespace add
         struct dirent *file = readdir(folder);
         while (file != NULL)
         {
-
             if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vscode") == 0 || strcmp(file->d_name, "main.cpp") == 0
-            || strcmp(file->d_name, "rollback.h") == 0 || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "commit.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0)
-                cout << "ignore" << endl;
+            || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "rollback.h") == 0 || strcmp(file->d_name, "commit.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0){
+                
+                // cout <<file->d_name << " ignore" << endl;
+            }
             else
             {
 
                 string filepath = cwd + "/" + file->d_name;
-                string new_path = "./.vcs/" + version + "/" + string(file->d_name);
+                string new_path = "./.vcs/" + version + "/"+path+"/" + string(file->d_name);
                 if (file->d_type == DT_DIR)
                 {
-                    cout << "Directory" << filepath << endl;
+                    // cout << "Directory " << filepath << endl;
 
                     // cout<<"directory_detected";
                     // create_dir_structure(new_path,"0");
                     copydirectory(filepath, new_path);
+                    // cout << "outof dir\n";
                 }
 
                 else
                 {
+                    // cout << "file " << filepath << endl;
                     // create_dir_structure(new_path,"0");
-                    copyfile(filepath, new_path);
+                    copyfile(filepath, path+"/" + string(file->d_name));
+                    // cout << "outof file\n";
                 }
             }
             file = readdir(folder);
@@ -138,7 +144,7 @@ namespace add
         realpath(check_path.c_str(), resolved);
         // cout<<
         string abs_path = string(resolved);
-        cout << "Absolute Path: " << abs_path << endl;
+        // cout << "Absolute Path: " << abs_path << endl;
         vector<string> directories_in_path;
         string temp;
         for (int i = cwd.size() + 1; i < (int)abs_path.size(); i++)
@@ -156,7 +162,7 @@ namespace add
         string temp_path = vcspath + "/" + version;
         for (auto i : directories_in_path)
         {
-            cout << "Here " << i << endl;
+            // cout << "Here " << i << endl;
             // if (count<2)
             //     {
             //         count++;
@@ -175,11 +181,21 @@ namespace add
             }
         }
     }
-    void copyfile(string path1, string path2)
+    void copyfile(string path1, string filePath)
     {
+        string version, path2 = filePath;
+        // cout << "copyfile src " << path1 << endl;
+        // cout << "copyfile dest " << path2 << endl;
+        ifstream vfile("./.vcs/version.info");
+        vfile >> version;
+        vfile.close();
+
+        if(filePath.substr(0, 7) != "./.vcs/"){
+            // cout << "not found\n";
+            path2 = "./.vcs/" + version + "/"+filePath;
+        }
         string cwd = fs::current_path();
-        cout << path1 << endl;
-        cout << path2 << endl;
+        // cout << "copyfile dest " << path2 << endl;
         calculateFileSHA(path1);
         char buffer[1000];
         memset(&buffer[0], 0, sizeof(buffer));
@@ -200,48 +216,24 @@ namespace add
         filecheck2 = open(path2.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         if (filecheck2 == -1)
         {
-            cout << "error" << endl;
-            return;
+            create_dir_structure(path1, version);
+            filecheck2 = open(path2.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            // cout << "Succces---" << endl;
         }
         int a = 0;
         while ((a = read(filecheck1, buffer, 1000)))
         {
-            if(a != -1)
+            if(a != -1) {
                 write(filecheck2, buffer, a);
+            }
             else break;
         }
         chmod(path2.c_str(), buff.st_mode);
 
-        printf("Successful copy");
+        // printf("Successful copy\n");
 
         close(filecheck1);
         close(filecheck2);
-        // fstream f1;
-        // fstream f2;
-        // string ch;
-    
-        // // opening first file to read the content
-        // f1.open(path1, ios::in);
-    
-        // // opening second file to write
-        // // the content copied from
-        // // first file
-        // f2.open(path2, ios::out);
-    
-        // while (!f1.eof()) {
-    
-        //     // extracting the content of
-        //     // first file line by line
-        //     getline(f1, ch);
-    
-        //     // writing content to second
-        //     // file line by line
-        //     f2 << ch << endl;
-        // }
-    
-        // // closing the files
-        // f1.close();
-        // f2.close();
     }
     void copydirectory(string path1, string path2)
     {
@@ -251,14 +243,23 @@ namespace add
         // opening the folder
         DIR *folder = opendir(path1.c_str());
         // creating a directory with the same name at specified vcspath
-        if (createdir(path2) == -1)
+
+        if (!(fs::exists(path2.c_str())))
+        // if (createdir(path2) == -1)
         {
-            cout << "no dir";
-            return;
+            string version;
+            ifstream vfile("./.vcs/version.info");
+            vfile >> version;
+            vfile.close();
+            create_dir_structure(path1, version);
+            // cout << "no dir";
+            // return;
         }
 
-        if (folder == NULL)
+        if (folder == NULL){
+            cout << "returning null";
             return;
+        }
         // reading files in a directory
         struct dirent *file;
         file = readdir(folder);
@@ -272,15 +273,16 @@ namespace add
             // 	return true;
             // 	}
 
-            if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0)
-                cout << ". or .. detected" << endl;
+            if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0){
+                // cout << ". or .. detected" << endl;
+            }
             else
             {
 
                 // string filepath= path1 +"/"+file->d_name;
                 if (file->d_type == DT_DIR)
                 {
-                    cout << "Directory " << path1 + "/" + file->d_name << endl;
+                    // cout << "Directory " << path1 + "/" + file->d_name << endl;
                     pair<string, string> PAIR;
                     PAIR.first = path1 + "/" + file->d_name;
                     PAIR.second = path2 + "/" + file->d_name;
@@ -313,7 +315,7 @@ namespace add
         string new_path = "./.vcs/" + version + "/" + string(fs::path(addPath.c_str()));
         if (fs::is_directory(addPath.c_str()))
         {
-            cout << "Directory" << addPath << endl;
+            // cout << "Directory" << addPath << endl;
             create_dir_structure(addPath, version);
             copydirectory(addPath, new_path);
         }
@@ -325,54 +327,17 @@ namespace add
         }
     }
 
-    void addComplete()
+    void addComplete(string path)
     {
         string cwd = fs::current_path();
-        if (fs::is_empty(vcspath.c_str()) == 1)
-        {
-            system("mkdir  ./.vcs/0");
-            system("touch ./.vcs/version.info");
-            ofstream vfile("./.vcs/version.info");
-            vfile << "0";
-            vfile.close();
-            cout << "mkdir done..." << endl;
-            DIR *folder = opendir(cwd.c_str());
-            if (folder == NULL)
-                return ;
-            // reading files in a directory
-            struct dirent *file = readdir(folder);
-            while (file != NULL)
-            {
-
-                if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vscode") == 0 || strcmp(file->d_name, "main.cpp") == 0
-                || strcmp(file->d_name, "rollback.h") == 0 || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "commit.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0)
-                    cout << "ignore" << endl;
-                else
-                {
-
-                    string filepath = cwd + "/" + file->d_name;
-                    string new_path = "./.vcs/0/" + string(file->d_name);
-                    if (file->d_type == DT_DIR)
-                    {
-                        cout << "Directory" << filepath << endl;
-
-                        copydirectory(filepath, new_path);
-                    }
-
-                    else
-                    {
-                        copyfile(filepath, new_path);
-                    }
-                }
-                file = readdir(folder);
-            }
-            closedir(folder);
+        string filepath1 = cwd + "/" + path;
+        // cout << endl << path << endl;
+        if(fs::is_directory(filepath1.c_str())) {
+            copy_version(path);
+        } 
+        else {
+            copyfile(filepath1,path);
         }
-        else
-        {
-            copy_version();
-        }
-
 
     }
 }
