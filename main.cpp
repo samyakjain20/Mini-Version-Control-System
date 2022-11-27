@@ -1,10 +1,10 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 #include <dirent.h>
-#include <sys/stat.h> // imported to create directory
-#include <sys/types.h> // imported to create directory
-#include <fstream> // filehandling
-#include <openssl/sha.h> // SHA 
-#include <ctime>  // using for timestamp
+#include <sys/stat.h>    // imported to create directory
+#include <sys/types.h>   // imported to create directory
+#include <fstream>       // filehandling
+#include <openssl/sha.h> // SHA
+#include <ctime>         // using for timestamp
 #include <filesystem>
 #include "add.h"
 #include "diff.h"
@@ -16,7 +16,8 @@ namespace fs = std::filesystem;
 bool vcs = false; // indicating if there is vcsfolder cerated
 int versionNo;
 
-bool validPath(string &path){
+bool validPath(string &path)
+{
     char resPath[300];
     realpath(path.c_str(), resPath); // absolute path
     string temp(resPath);
@@ -26,26 +27,29 @@ bool validPath(string &path){
     struct stat sfile;
     int exist = stat(path.c_str(), &sfile);
     // cout<<path<<" "<<exist<<endl;
-    if(exist == -1)
+    if (exist == -1)
         return false;
-    else 
-        return true;  
+    else
+        return true;
 }
 
-struct commitData{
+struct commitData
+{
     int commitNo;
     char commitSHA[50], message[200], timeStamp[50], hexCode[10];
 };
 
 map<int, commitData> commitInfoMap; // <commitNo, struct commitData>
-map<string, int> commitHexMap; // <hex, commitNo> 
-void loadCommitData(){
+map<string, int> commitHexMap;      // <hex, commitNo>
+void loadCommitData()
+{
     // cout << "Inside commit Data load\n";
     FILE *commitFile;
     commitFile = fopen("./.vcs/commit.info", "r");
 
     commitData cmt;
-    while (fread(&cmt, sizeof(commitData), 1, commitFile)){
+    while (fread(&cmt, sizeof(commitData), 1, commitFile))
+    {
         commitInfoMap[cmt.commitNo] = cmt;
         commitHexMap[cmt.hexCode] = cmt.commitNo;
 
@@ -54,84 +58,89 @@ void loadCommitData(){
     fclose(commitFile);
 }
 
-bool checkVcs(){
+bool checkVcs()
+{
     string path = "./.vcs";
     char resPath[300];
     realpath(path.c_str(), resPath); // absolute path
     string temp(resPath);
     path = temp;
-    
+
     struct stat sfile;
     int exist = stat(path.c_str(), &sfile);
-    if(exist == -1)
+    if (exist == -1)
         return vcs = false;
 
     string fileName = "./.vcs/version.info";
     fstream file(fileName.c_str());
 
     file >> temp;
-    cout << "version no: " << temp << endl; 
+    cout << "Version no : " << temp << endl;
     versionNo = stoi(temp);
 
     loadCommitData();
     return vcs = true;
 }
 
-void handleInit(){
+void handleInit()
+{
     // Creating a directory
-    if(checkVcs()){
+    if (checkVcs())
+    {
         cout << "VCS initialised already...\n";
         return;
     }
     int err = mkdir(".vcs", 0777);
-    if (err != -1){
+    if (err != -1)
+    {
         string temp = "./.vcs/" + to_string(versionNo);
-        if (mkdir(temp.c_str(), 0777) == -1){
+        if (mkdir(temp.c_str(), 0777) == -1)
+        {
             cerr << "Error creating vcs -> 0 :  " << strerror(errno) << endl;
-            return ;
+            return;
         }
     }
-    else{
+    else
+    {
         cerr << "Error creating vcs :  " << strerror(errno) << endl;
-        return ;
+        return;
     }
-    cout << "VCS initialised..\n" ;
+    cout << "VCS initialised..\n";
     vcs = true;
 
     string fileName = "./.vcs/version.info", temp = "0";
-    fstream file(fileName.c_str(), ios::in | ios:: app);
+    fstream file(fileName.c_str(), ios::in | ios::app);
     file.write(temp.c_str(), temp.size());
     file.close();
     fileName = "./.vcs/commit.info";
-    fstream file2(fileName.c_str(), ios::in | ios:: app);
+    fstream file2(fileName.c_str(), ios::in | ios::app);
     file2.close();
 }
 
-string generateHex(){
-    char chars[]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-  
+string generateHex()
+{
+    char chars[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
     string hex;
-    for(int i = 0; i < 7; i++)
-        hex += chars [rand() % 16];
+    for (int i = 0; i < 7; i++)
+        hex += chars[rand() % 16];
     return hex;
 }
 
-void createForPatch(string path1, string path2){
+void createForPatch(string path1, string path2)
+{
     string command = "diff ";
     string filename, destPath;
     int found = path1.find_last_of(".");
     filename = path1.substr(0, found);
-
-    // cout<<filename<<endl;
-    // cout << path1 << " " << path2 << "  "<< filename<<endl;
-    command = command + path2 + " " + path1 + " >> " + path1+".patch";
+    command = command + path2 + " " + path1 + " >> " + path1 + ".patch";
     system(command.c_str());
     string remove_command = "rm " + path1;
     system(remove_command.c_str());
-    
 }
 
-string calculateFileSHA(string cmtData){
+string calculateFileSHA(string cmtData)
+{
     unsigned char completeFileSHA[SHA_DIGEST_LENGTH];
     SHA_CTX shaContext;
 
@@ -147,7 +156,8 @@ string calculateFileSHA(string cmtData){
     return commitSHA;
 }
 
-void getFileRecursive(vector<string> &st, string path, string dirName){
+void getFileRecursive(vector<string> &st, string path, string dirName)
+{
     DIR *dir;
     struct dirent *sd;
     // cout << "Inside dir: ";
@@ -155,29 +165,34 @@ void getFileRecursive(vector<string> &st, string path, string dirName){
     // cout << fullPath << endl;
     dir = opendir(fullPath.c_str());
 
-    while( (sd = readdir(dir)) != NULL ){
+    while ((sd = readdir(dir)) != NULL)
+    {
         string currFile = sd->d_name;
-        if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
+        if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
             continue;
-        else{
+        else
+        {
             struct stat sfile;
-            currFile  = path + dirName + "/" + sd->d_name;
+            currFile = path + dirName + "/" + sd->d_name;
             stat(currFile.c_str(), &sfile);
             // cout << currFile << endl;
 
-            if (fs::is_directory(currFile.c_str())){
-                // cout << "recur " << dirName + "/" + sd->d_name << endl; 
+            if (fs::is_directory(currFile.c_str()))
+            {
+                // cout << "recur " << dirName + "/" + sd->d_name << endl;
                 getFileRecursive(st, path, dirName + "/" + sd->d_name);
             }
-            else 
+            else
                 st.push_back(dirName + "/" + sd->d_name);
         }
     }
     // cout << "going out\n";
 }
-void handleCommit(string commitMsg){
+void handleCommit(string commitMsg)
+{
     // will create patch
-    if (versionNo > 0){
+    if (versionNo > 0)
+    {
         string path1 = "./.vcs/" + to_string(versionNo - 1) + "/", path2 = "./.vcs/" + to_string(versionNo) + "/";
         // cout << path1 << " " << path2 << endl;
 
@@ -186,18 +201,21 @@ void handleCommit(string commitMsg){
         dir1 = opendir(path1.c_str());
         dir2 = opendir(path2.c_str());
 
-        if (dir1 == NULL || dir2 == NULL){
+        if (dir1 == NULL || dir2 == NULL)
+        {
             cout << "'.vcs' folder corrupted.\n";
             return;
         }
 
         vector<string> old, latest; // stores path of all the files / directories
         dir = dir2;
-        while ((sd = readdir(dir)) != NULL){
+        while ((sd = readdir(dir)) != NULL)
+        {
             string currFile = sd->d_name;
-            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
+            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
                 continue;
-            else{
+            else
+            {
                 struct stat sfile;
                 currFile = path2 + sd->d_name;
                 stat(currFile.c_str(), &sfile);
@@ -209,18 +227,21 @@ void handleCommit(string commitMsg){
             }
             // cout << "latest " << sd->d_name << endl;
         }
-        if (latest.empty()){
+        if (latest.empty())
+        {
             cout << "Nothing to commit..\n";
             return;
         }
 
         dir = dir1;
-        while ((sd = readdir(dir)) != NULL){
+        while ((sd = readdir(dir)) != NULL)
+        {
             string currFile = sd->d_name;
             // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name);
             if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
                 continue;
-            else{
+            else
+            {
                 struct stat sfile;
                 currFile = path1 + currFile;
                 stat(currFile.c_str(), &sfile);
@@ -241,7 +262,8 @@ void handleCommit(string commitMsg){
         //     cout << it2 << "\n";
         // cout << endl;
 
-        for (auto it1 : old){
+        for (auto it1 : old)
+        {
             auto it3 = find(latest.begin(), latest.end(), it1);
             if (it3 != latest.end())
                 createForPatch(path1 + it1, path2 + *it3);
@@ -297,20 +319,38 @@ void handleCommit(string commitMsg){
     fclose(commitFile);
     cout << "\nCommit " << versionNo - 1 << " is added with " << commitHex << " .\n";
 }
-void log(){
-    for(auto it = commitInfoMap.begin(); it != commitInfoMap.end(); it++){
+void log()
+{
+    for (auto it = commitInfoMap.begin(); it != commitInfoMap.end(); it++)
+    {
         struct commitData cmt = it->second;
-        cout << "commit " << cmt.commitSHA << endl <<  "Date: " << cmt.timeStamp <<  "Commit Id: " << cmt.hexCode << endl << "\t" << cmt.message << "\n\n";
+
+        cout << "\033[1;36m";
+        cout << "Commit " << cmt.commitSHA << endl;
+        cout << "\033[0m";
+        cout << "\033[1;37m";
+        cout << "Date: " << cmt.timeStamp;
+        cout << "\033[0m";
+        cout << "\033[1;33m";
+        cout << "Commit Id: " << cmt.hexCode << endl
+             << "\t";
+        cout << "\033[0m";
+        cout << "\033[1;32m";
+        cout << cmt.message << "\n\n";
+        cout << "\033[0m";
     }
 }
 
-vector<string> parseCommands(string cmnd){
+vector<string> parseCommands(string cmnd)
+{
     vector<string> args;
     int i = 0, j = 0, n = cmnd.size();
-    while (i < n){
+    while (i < n)
+    {
         if (i == j && cmnd[i] == ' ')
             j++;
-        else if (cmnd[i] == ' '){
+        else if (cmnd[i] == ' ')
+        {
             args.push_back(cmnd.substr(j, i - j));
             j = i + 1;
         }
@@ -320,57 +360,64 @@ vector<string> parseCommands(string cmnd){
     return args;
 }
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
     string cmnd = "";
-    for(int i= 1 ; i < argc; i++){
+    for (int i = 1; i < argc; i++)
+    {
         string temp(argv[i]);
         cmnd += temp + " ";
     }
     cmnd = cmnd.substr(0, cmnd.size() - 1);
 
     checkVcs();
- 
+
     vector<string> cmndArgs = parseCommands(cmnd);
-    if(cmndArgs[0] == "init")
+    if (cmndArgs[0] == "init")
         handleInit(); // passing path as argument
-    else if(cmndArgs[0] == "validate" ){
+    else if (cmndArgs[0] == "validate")
+    {
         validPath(cmndArgs[1]); // passing path as argument
     }
-    else if(!vcs && cmndArgs[0] == "commit")
+    else if (!vcs && cmndArgs[0] == "commit")
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "commit"){
+    else if (vcs && cmndArgs[0] == "commit")
+    {
         string commitMsg = "";
-        for(int i = 1; i < (int)cmndArgs.size(); i++)
+        for (int i = 1; i < (int)cmndArgs.size(); i++)
             commitMsg += cmndArgs[i] + " ";
         handleCommit(commitMsg.substr(0, commitMsg.size() - 1)); // passing path as argument
         cout << "Commit done successfully!\n";
     }
-    else if(!vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
+    else if (!vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1){
-        for(int i = 1; i < (int)cmndArgs.size(); i++)
+    else if (vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
+    {
+        for (int i = 1; i < (int)cmndArgs.size(); i++)
             add::addComplete(cmndArgs[i]);
     }
-    else if(!vcs && cmndArgs[0] == "diff")
+    else if (!vcs && cmndArgs[0] == "diff")
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "diff")
+    else if (vcs && cmndArgs[0] == "diff")
         diff::difference_between_two(cmndArgs[1]);
-    else if(!vcs && cmndArgs[0] == "log")
+    else if (!vcs && cmndArgs[0] == "log")
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "log")
+    else if (vcs && cmndArgs[0] == "log")
         log();
-    else if(!vcs && cmndArgs[0] == "status")
+    else if (!vcs && cmndArgs[0] == "status")
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "status")
+    else if (vcs && cmndArgs[0] == "status")
         status::vcsCmndStatus();
-    else if(!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() > 1)
+    else if (!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() > 1)
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "rollback" && cmndArgs.size() > 1){
+    else if (vcs && cmndArgs[0] == "rollback" && cmndArgs.size() > 1)
+    {
         // string tempPath = "./.vcs/" + to_string(versionNo);
         // if(!(fs::is_empty(tempPath)){
         //     cout << "Working directory not clean, "
         // }
-        if(commitHexMap.find(cmndArgs[1]) == commitHexMap.end()){
+        if (commitHexMap.find(cmndArgs[1]) == commitHexMap.end())
+        {
             cout << "No such commit id found\n";
             return 0;
         }
@@ -380,7 +427,7 @@ int main(int argc, char *argv[]){
         rollback::rollback(to_string(commitHexMap[cmndArgs[1]]), "./", versionNo);
         cout << "Rollback done to commit " << cmndArgs[1] << endl;
     }
-    else if(vcs && cmndArgs[0] == ":exit")
+    else if (vcs && cmndArgs[0] == ":exit")
         return 0;
     else
         cout << "Invalid Command\n";
