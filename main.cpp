@@ -9,6 +9,7 @@
 #include "add.h"
 #include "diff.h"
 #include "status.h"
+#include "rollback.h"
 using namespace std;
 
 namespace fs = std::filesystem;
@@ -155,7 +156,7 @@ void getFileRecursive(vector<string> &st, string path, string dirName){
 
     while( (sd = readdir(dir)) != NULL ){
         string currFile = sd->d_name;
-        if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp")
+        if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
             continue;
         else{
             struct stat sfile;
@@ -193,8 +194,7 @@ void handleCommit(string commitMsg){
         dir = dir2;
         while ((sd = readdir(dir)) != NULL){
             string currFile = sd->d_name;
-            // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name);
-            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
+            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
                 continue;
             else{
                 struct stat sfile;
@@ -217,7 +217,7 @@ void handleCommit(string commitMsg){
         while ((sd = readdir(dir)) != NULL){
             string currFile = sd->d_name;
             // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name);
-            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
+            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
                 continue;
             else{
                 struct stat sfile;
@@ -230,7 +230,7 @@ void handleCommit(string commitMsg){
                     old.push_back(sd->d_name);
             }cout << "old " << sd->d_name << endl;
         }
-        
+
         cout << "out of dir thing\n\n";
 
         for (auto it1 : old)
@@ -349,6 +349,8 @@ int main(int argc, char *argv[]){
         log();
     else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "status")
         status::vcsCmndStatus();
+    else if(cmndArgs[0] == "vcs" && cmndArgs[1] == "rollback")
+        rollback::rollback(cmndArgs[2], "./");
     else if(cmndArgs[0] == ":exit")
         return 0;
     else
