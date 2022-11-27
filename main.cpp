@@ -5,11 +5,13 @@
 #include <fstream> // filehandling
 #include <openssl/sha.h> // SHA 
 #include <ctime>  // using for timestamp
+#include <filesystem>
 #include "add.h"
 #include "diff.h"
 #include "status.h"
 using namespace std;
 
+namespace fs = std::filesystem;
 bool vcs = false; // indicating if there is vcsfolder cerated
 int versionNo;
 
@@ -143,9 +145,37 @@ string calculateFileSHA(string cmtData){
     return commitSHA;
 }
 
+void getFileRecursive(vector<string> &st, string path, string dirName){
+    DIR *dir;
+    struct dirent *sd;
+    // cout << "Inside dir: ";
+    string fullPath = path + dirName;
+    // cout << fullPath << endl;
+    dir = opendir(fullPath.c_str());
+
+    while( (sd = readdir(dir)) != NULL ){
+        string currFile = sd->d_name;
+        if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp")
+            continue;
+        else{
+            struct stat sfile;
+            currFile  = path + dirName + "/" + sd->d_name;
+            stat(currFile.c_str(), &sfile);
+            // cout << currFile << endl;
+
+            if (fs::is_directory(currFile.c_str())){
+                cout << "recur " << dirName + "/" + sd->d_name << endl; 
+                getFileRecursive(st, path, dirName + "/" + sd->d_name);
+            }
+            else 
+                st.push_back(dirName + "/" + sd->d_name);
+        }
+    }
+    // cout << "going out\n";
+}
 void handleCommit(string commitMsg){
     // will create patch
-    if(versionNo > 0){
+    if (versionNo > 0){
         string path1 = "./.vcs/" + to_string(versionNo - 1) + "/", path2 = "./.vcs/" + to_string(versionNo) + "/";
         cout << path1 << " " << path2 << endl;
 
@@ -153,146 +183,119 @@ void handleCommit(string commitMsg){
         struct dirent *sd;
         dir1 = opendir(path1.c_str());
         dir2 = opendir(path2.c_str());
-        
-        if(dir1 == NULL || dir2 == NULL){
-            cout << "'.vcs' folder corrupted.\n" ;
+
+        if (dir1 == NULL || dir2 == NULL){
+            cout << "'.vcs' folder corrupted.\n";
             return;
         }
 
-        set<string> old, latest; // stores path of all the files / directories
+        vector<string> old, latest; // stores path of all the files / directories
         dir = dir2;
-        while( (sd = readdir(dir)) != NULL ){
+        while ((sd = readdir(dir)) != NULL){
             string currFile = sd->d_name;
-            // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name); 
-            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
+            // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name);
+            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
                 continue;
-            else
-                latest.insert(sd->d_name);
+            else{
+                struct stat sfile;
+                currFile = path2 + sd->d_name;
+                stat(currFile.c_str(), &sfile);
+
+                if (fs::is_directory(currFile.c_str()))
+                    getFileRecursive(latest, path2, sd->d_name);
+                else
+                    latest.push_back(sd->d_name);
+            }
             cout << "latest " << sd->d_name << endl;
         }
-        if(latest.empty()){
+        if (latest.empty()){
             cout << "Nothing to commit..\n";
             return;
         }
 
         dir = dir1;
-        while( (sd = readdir(dir)) != NULL ){
+        while ((sd = readdir(dir)) != NULL){
             string currFile = sd->d_name;
-            // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name); 
-            if(currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h"|| currFile == "a.out"||currFile==".git"|| currFile == ".vscode" || currFile == "main.cpp")
+            // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name);
+            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
                 continue;
-            else
-                old.insert(sd->d_name);
-            cout << "old " << sd->d_name << endl;
+            else{
+                struct stat sfile;
+                currFile = path1 + currFile;
+                stat(currFile.c_str(), &sfile);
+
+                if (fs::is_directory(currFile.c_str()))
+                    getFileRecursive(old, path1, sd->d_name);
+                else
+                    old.push_back(sd->d_name);
+            }cout << "old " << sd->d_name << endl;
         }
         
-        cout << "out of loop\n\n";
-        for(auto it1 : old){
-            struct stat sfile;
-            string currFile = path1  + it1;
-            stat(currFile.c_str(), &sfile);
-
-            if((sfile.st_mode & S_IFDIR)){
-                cout << currFile << " ";
-                DIR *dir;
-                struct dirent *sd;
-                dir = opendir(currFile.c_str());
-                old.erase(old.find(it1));
-                string tempPath = it1;
-
-                while( (sd = readdir(dir)) != NULL )
-                    if(strcmp(sd->d_name, "..") == 0 || strcmp(sd->d_name, ".") == 0)
-                        continue;
-                    else{
-                        cout << sd->d_name << endl;
-                        old.insert(it1 + "/" + sd->d_name);
-                    }
-            }
-        }
-        cout << "1st done\n\n";
-        for(auto it2 : latest){
-            struct stat sfile;
-            string currFile = path2  + it2;
-            stat(currFile.c_str(), &sfile);
-
-            if((sfile.st_mode & S_IFDIR)){
-                cout << currFile << " ";
-                DIR *dir;
-                struct dirent *sd;
-                dir = opendir(currFile.c_str());
-                latest.erase(latest.find(it2));
-
-                while( (sd = readdir(dir)) != NULL )
-                    if(strcmp(sd->d_name, "..") == 0 || strcmp(sd->d_name, ".") == 0)
-                        continue;
-                    else{
-                        cout << sd->d_name << endl;
-                        latest.insert(it2 + "/" + sd->d_name);
-                    }
-            }
-        }
         cout << "out of dir thing\n\n";
 
-        for(auto it1 : old)
+        for (auto it1 : old)
             cout << it1 << "\n";
-        for(auto it2 : latest)
-            cout << it2 << "\n"; 
+        for (auto it2 : latest)
+            cout << it2 << "\n";
         cout << endl;
-        
-        for(auto it1 : old){
-            auto it3 = latest.find(it1);
-            if(it3 != latest.end())
+
+        for (auto it1 : old){
+            auto it3 = find(latest.begin(), latest.end(), it1);
+            if (it3 != latest.end())
                 createForPatch(path1 + it1, path2 + *it3);
         }
     }
     // increasing versionNo
     versionNo++;
     string temp = "./.vcs/" + to_string(versionNo);
-    if (mkdir(temp.c_str(), 0777) == -1){
+    if (mkdir(temp.c_str(), 0777) == -1)
+    {
         cerr << "Error creating new version folder:  " << strerror(errno) << endl;
-        return ;
+        return;
     }
     string fileName = "./.vcs/version.info", hexCode;
     temp = to_string(versionNo);
     remove(fileName.c_str());
-    fstream file(fileName.c_str(), ios::in | ios:: app);
+    fstream file(fileName.c_str(), ios::in | ios::app);
     file.write(temp.c_str(), temp.size());
     file.close();
 
     string currHex = generateHex();
-    while(commitHexMap.find(currHex) != commitHexMap.end())
+    while (commitHexMap.find(currHex) != commitHexMap.end())
         currHex = generateHex();
 
-    string commitHex = calculateFileSHA(to_string(versionNo-1) + commitMsg + currHex);
+    string commitHex = calculateFileSHA(to_string(versionNo - 1) + commitMsg + currHex);
 
-    auto t = std::chrono::system_clock::now(); 
+    auto t = std::chrono::system_clock::now();
     std::time_t currTime = std::chrono::system_clock::to_time_t(t);
 
     struct commitData cd;
     string timeStamp(std::ctime(&currTime));
-    cout << endl << timeStamp << endl;
-	cd.commitNo = versionNo-1;
-	strcpy(cd.commitSHA, commitHex.c_str());
+    cout << endl
+         << timeStamp << endl;
+    cd.commitNo = versionNo - 1;
+    strcpy(cd.commitSHA, commitHex.c_str());
     strcpy(cd.message, commitMsg.c_str());
     strcpy(cd.timeStamp, timeStamp.c_str());
     strcpy(cd.hexCode, currHex.c_str());
-    commitHexMap[commitHex] = versionNo-1;
-    commitInfoMap[versionNo-1] = cd;
+    commitHexMap[commitHex] = versionNo - 1;
+    commitInfoMap[versionNo - 1] = cd;
 
-	FILE *commitFile;
-	commitFile = fopen("./.vcs/commit.info", "a");
-	if(!commitFile) {
-		cout << "Invalid file" << endl;
-		return;
-	}
-	if(	fwrite(&cd, sizeof(struct commitData), 1, commitFile) == 0) {
-		string msg = "commit File Handling Error!!\n";
-		cout << msg << endl;
-	}
-	fclose(commitFile);
-    cout << "Commit " << versionNo - 1 << " is added with " << commitHex <<" .\n";
+    FILE *commitFile;
+    commitFile = fopen("./.vcs/commit.info", "a");
+    if (!commitFile)
+    {
+        cout << "Invalid file" << endl;
+        return;
+    }
+    if (fwrite(&cd, sizeof(struct commitData), 1, commitFile) == 0)
+    {
+        string msg = "commit File Handling Error!!\n";
+        cout << msg << endl;
+    }
+    fclose(commitFile);
+    cout << "Commit " << versionNo - 1 << " is added with " << commitHex << " .\n";
 }
-
 void log(){
     for(auto it = commitInfoMap.begin(); it != commitInfoMap.end(); it++){
         struct commitData cmt = it->second;
