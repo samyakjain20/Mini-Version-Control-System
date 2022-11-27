@@ -75,7 +75,13 @@ bool checkVcs()
     fstream file(fileName.c_str());
 
     file >> temp;
-    cout << "Version no : " << temp << endl;
+    
+    cout << endl << endl;
+    cout << "\033[1;37m";
+    cout << "\033[1;7m";
+    cout << "\t\t\t\t\t\t\t\t\t Current Version no : " << temp << " " << endl << endl;
+    cout << "\033[0m";
+    // printf("\033[%d;%dH\u001b[0m\u001b[42m Version No. \u001b[0m %s",0,50,temp);
     versionNo = stoi(temp);
 
     loadCommitData();
@@ -373,8 +379,11 @@ int main(int argc, char *argv[])
     checkVcs();
 
     vector<string> cmndArgs = parseCommands(cmnd);
-    if (cmndArgs[0] == "init")
+    if (!vcs && cmndArgs[0] == "init")
         handleInit(); // passing path as argument
+    else if (vcs && cmndArgs[0] == "init")
+        cout << "VCS already initialized\n";
+
     else if (cmndArgs[0] == "validate")
     {
         validPath(cmndArgs[1]); // passing path as argument
