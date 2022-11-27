@@ -392,11 +392,20 @@ int main(int argc, char *argv[])
         cout << "VCS not initialized\n";
     else if (vcs && cmndArgs[0] == "commit")
     {
+        if(cmndArgs.size() > 1)
+        {
+
+        
         string commitMsg = "";
         for (int i = 1; i < (int)cmndArgs.size(); i++)
             commitMsg += cmndArgs[i] + " ";
         handleCommit(commitMsg.substr(0, commitMsg.size() - 1)); // passing path as argument
         cout << "Commit done successfully!\n";
+        }
+        else
+        {
+            cout<<"Invalid command. Commit message not provided."<<endl;
+        }
     }
     else if (!vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
         cout << "VCS not initialized\n";
