@@ -41,7 +41,6 @@ namespace diff
             return false;    
     }
 
-
     void difference_between_two(string file){
         int versionNo;
         string temp;
