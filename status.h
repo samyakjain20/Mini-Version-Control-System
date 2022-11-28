@@ -173,7 +173,7 @@ namespace status
         string un_tracked = "Untracked Files:\n";
         string deleted_file = "Deleted Files:\n";
         string modified_file = "Modified Files:\n";
-        string tracked_file = "Staged Files: \n";
+        string tracked_file = "Staged Files:\n";
         string name_of_un = "";
         string name_of_del = "";
         string name_of_mod = "";
@@ -193,14 +193,14 @@ namespace status
                     }
                     else
                     {
-                        name_of_mod += "\t modified: " + (getFileName(i.first));
+                        name_of_mod += "\t modified:   " + (getFileName(i.first));
                         name_of_mod += "\n";
                         // cout << "Modified file-->>" << name_of_mod;
                     }
                 }
                 else
                 {
-                    name_of_del += "\t deleted: " + (getFileName(i.first));
+                    name_of_del += "\t deleted:   " + (getFileName(i.first));
                     name_of_del += "\n";
                 }
             }
@@ -209,14 +209,14 @@ namespace status
         {
             if (previous_sha.count(i.first) == 0)
             {
-                name_of_un += "\t untracked: " + (getFileName(i.first));
+                name_of_un += "\t untracked:   " + (getFileName(i.first));
                 name_of_un += "\n";
             }
         }
         for (auto i : currTrackedSHA)
         {
 
-            name_of_track += "\t staged: " + (getFileName(i.first));
+            name_of_track += "\t staged:   " + (getFileName(i.first));
             name_of_track += "\n";
         }
 
@@ -227,20 +227,58 @@ namespace status
         }
         else
         {
-            output += tracked_file;
-            output += name_of_track;
-            output += "\n";
-            output += un_tracked;
-            output += name_of_un;
-            output += "\n";
-            output += deleted_file;
-            output += name_of_del;
-            output += "\n";
-            output += modified_file;
-            output += name_of_mod;
+
+            cout << "\033[1;32m";
+            cout << "\033[4;32m";
+            cout << tracked_file<< endl;
+            cout << "\033[0m";
+
+            cout << "\033[0;32m";
+            cout << name_of_track<< endl;
+            cout << "\033[0m";
+
+            cout << "\033[1;36m";
+            cout << "\033[4;36m";
+            cout << un_tracked<< endl;
+            cout << "\033[0m";
+
+            cout << "\033[0;36m";
+            cout << name_of_un<< endl;
+            cout << "\033[0m";
+
+            cout << "\033[1;31m";
+            cout << "\033[4;31m";
+            cout << deleted_file<< endl;
+            cout << "\033[0m";
+
+            cout << "\033[0;31m";
+            cout << name_of_del<< endl;
+            cout << "\033[0m";
+
+            cout << "\033[1;33m";
+            cout << "\033[4;33m";
+            cout << modified_file<< endl;
+            cout << "\033[0m";
+
+            cout << "\033[0;33m";
+            cout << name_of_mod<< endl;
+            cout << "\033[0m";
+
+
+            // output += tracked_file;
+            // output += name_of_track;
+            // output += "\n";
+            // output += un_tracked;
+            // output += name_of_un;
+            // output += "\n";
+            // output += deleted_file;
+            // output += name_of_del;
+            // output += "\n";
+            // output += modified_file;
+            // output += name_of_mod;
         }
 
-        cout << output;
+        // cout << output;
     }
 
     void vcsCmndStatus()

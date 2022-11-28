@@ -76,11 +76,13 @@ bool checkVcs()
     fstream file(fileName.c_str());
 
     file >> temp;
-    
-    cout << endl << endl;
+
+    cout << endl
+         << endl;
     cout << "\033[1;37m";
     cout << "\033[1;7m";
-    cout << "\t\t\t\t\t\t\t\t\t Current Version no : " << temp << " " << endl << endl;
+    cout << "\t\t\t\t\t\t\t\t\t Current Version no : " << temp << " " << endl
+         << endl;
     cout << "\033[0m";
     // printf("\033[%d;%dH\u001b[0m\u001b[42m Version No. \u001b[0m %s",0,50,temp);
     versionNo = stoi(temp);
@@ -125,6 +127,10 @@ void handleInit()
     fileName = "./.vcs/tracked_history.txt";
     fstream file3(fileName.c_str(), ios::in | ios::app);
     file3.close();
+
+    fileName = "./.vcs/tracked_current.txt";
+    fstream file4(fileName.c_str(), ios::in | ios::app);
+    file4.close();
 }
 
 string generateHex()
@@ -132,7 +138,7 @@ string generateHex()
     char chars[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     string hex;
-    srand((unsigned) time(NULL));
+    srand((unsigned)time(NULL));
     for (int i = 0; i < 7; i++)
         hex += chars[rand() % 16];
     return hex;
@@ -420,10 +426,12 @@ int main(int argc, char *argv[])
     {
         validPath(cmndArgs[1]); // passing path as argument
     }
-    else if(!vcs && cmndArgs[0] == "commit" && cmndArgs.size() > 1)
+    else if (!vcs && cmndArgs[0] == "commit" && cmndArgs.size() > 1)
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "commit" ){
-        if(cmndArgs.size() > 1){
+    else if (vcs && cmndArgs[0] == "commit")
+    {
+        if (cmndArgs.size() > 1)
+        {
             string commitMsg = "";
             for (int i = 1; i < (int)cmndArgs.size(); i++)
                 commitMsg += cmndArgs[i] + " ";
@@ -431,26 +439,29 @@ int main(int argc, char *argv[])
             cout << "Commit done successfully!\n";
         }
         else
-            cout<<"Invalid command. Commit message not provided."<<endl;
+            cout << "Invalid command. Commit message not provided." << endl;
         // if(msg)
         //     cout << "All the file/s are added successfully!\n";
         // else
-            cout << "All the remaning file/s are added successfully!\n";
+        cout << "All the remaning file/s are added successfully!\n";
     }
     else if (!vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1){
+    else if (vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
+    {
         bool msg = true;
-        for(int i = 1; i < (int)cmndArgs.size(); i++){
-            if( fs::exists(cmndArgs[i]) == false){
-                cout << "File "<< cmndArgs[i] <<" not present...\n";
+        for (int i = 1; i < (int)cmndArgs.size(); i++)
+        {
+            if (fs::exists(cmndArgs[i]) == false)
+            {
+                cout << "File " << cmndArgs[i] << " not present...\n";
                 msg = false;
                 continue;
             }
             // add::addComplete(branchName, cmndArgs[i]);
             add::addComplete(cmndArgs[i]);
         }
-        if(msg)
+        if (msg)
             cout << "All the file/s are added successfully!\n";
         else
             cout << "All the remaning file/s are added successfully!\n";
@@ -467,9 +478,10 @@ int main(int argc, char *argv[])
         cout << "VCS not initialized\n";
     else if (vcs && cmndArgs[0] == "status")
         status::vcsCmndStatus();
-    else if(!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2)
+    else if (!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2)
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2){
+    else if (vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2)
+    {
         // string tempPath = "./.vcs/" + to_string(versionNo);
         // if(!(fs::is_empty(tempPath)){
         //     cout << "Working directory not clean, "
