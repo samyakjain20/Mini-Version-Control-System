@@ -98,21 +98,6 @@ void handleInit()
         return;
     }
     int err = mkdir(".vcs", 0777);
-<<<<<<< HEAD
-    if (err != -1){
-        string temp = "./.vcs/0";
-        // if (mkdir(temp.c_str(), 0777) != -1){
-        //     temp = "./.vcs/main/" + to_string(versionNo);
-            if (mkdir(temp.c_str(), 0777) == -1){
-                cerr << "Error creating .vcs/0 -> 0 :  " << strerror(errno) << endl;
-                return ;
-            }
-        // }
-        // else{
-        //     cerr << "Error creating .vcs -> 0 :  " << strerror(errno) << endl;
-        //     return ;
-        // }
-=======
     if (err != -1)
     {
         string temp = "./.vcs/" + to_string(versionNo);
@@ -121,24 +106,13 @@ void handleInit()
             cerr << "Error creating vcs -> 0 :  " << strerror(errno) << endl;
             return;
         }
->>>>>>> 96a896c82065f3e78f9861638761b56c79d1834c
     }
     else
     {
         cerr << "Error creating vcs :  " << strerror(errno) << endl;
         return;
     }
-<<<<<<< HEAD
-    // string temp = "./.vcs/";
-    // if (mkdir(temp.c_str(), 0777) == -1){
-    //     cerr << "Error creating .vcs/main -> 0 :  " << strerror(errno) << endl;
-    //     return ;
-    // }
-
-    cout << "VCS initialised..\n" ;
-=======
     cout << "VCS initialised..\n";
->>>>>>> 96a896c82065f3e78f9861638761b56c79d1834c
     vcs = true;
 
     string fileName = "./.vcs/version.info", temp = "0";
@@ -148,6 +122,9 @@ void handleInit()
     fileName = "./.vcs/commit.info";
     fstream file2(fileName.c_str(), ios::in | ios::app);
     file2.close();
+    fileName = "./.vcs/tracked_history.txt";
+    fstream file3(fileName.c_str(), ios::in | ios::app);
+    file3.close();
 }
 
 string generateHex()
@@ -155,6 +132,7 @@ string generateHex()
     char chars[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     string hex;
+    srand((unsigned) time(NULL));
     for (int i = 0; i < 7; i++)
         hex += chars[rand() % 16];
     return hex;
@@ -221,7 +199,6 @@ void getFileRecursive(vector<string> &st, string path, string dirName)
     }
     // cout << "going out\n";
 }
-<<<<<<< HEAD
 void changes_on_commit()
 {
     string vcspath1 = "./.vcs/tracked_current.txt";
@@ -248,11 +225,8 @@ void changes_on_commit()
     ofs.close();
 }
 
-void handleCommit(string commitMsg){
-=======
 void handleCommit(string commitMsg)
 {
->>>>>>> 96a896c82065f3e78f9861638761b56c79d1834c
     // will create patch
     if (versionNo > 0)
     {
@@ -448,20 +422,19 @@ int main(int argc, char *argv[])
     }
     else if(!vcs && cmndArgs[0] == "commit" && cmndArgs.size() > 1)
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "commit" && cmndArgs.size() > 1){
-        bool msg = true;
-        for(int i = 1; i < (int)cmndArgs.size(); i++){
-            if( fs::exists(cmndArgs[i]) == false){
-                cout << "File "<< cmndArgs[i] <<" not present...\n";
-                msg = false;
-                continue;
-            }
-            // add::addComplete(branchName, cmndArgs[i]);
-            add::addComplete(cmndArgs[i]);
+    else if(vcs && cmndArgs[0] == "commit" ){
+        if(cmndArgs.size() > 1){
+            string commitMsg = "";
+            for (int i = 1; i < (int)cmndArgs.size(); i++)
+                commitMsg += cmndArgs[i] + " ";
+            handleCommit(commitMsg.substr(0, commitMsg.size() - 1)); // passing path as argument
+            cout << "Commit done successfully!\n";
         }
-        if(msg)
-            cout << "All the file/s are added successfully!\n";
         else
+            cout<<"Invalid command. Commit message not provided."<<endl;
+        // if(msg)
+        //     cout << "All the file/s are added successfully!\n";
+        // else
             cout << "All the remaning file/s are added successfully!\n";
     }
     else if (!vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
