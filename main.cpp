@@ -114,7 +114,9 @@ void handleInit()
         cerr << "Error creating vcs :  " << strerror(errno) << endl;
         return;
     }
-    cout << "VCS initialised..\n";
+    cout << "\033[1;32m";
+    cout << "VCS initialised...\n";
+    cout << "\033[0m";
     vcs = true;
 
     string fileName = "./.vcs/version.info", temp = "0";
@@ -404,6 +406,25 @@ vector<string> parseCommands(string cmnd)
     return args;
 }
 
+bool getFileName(string &fileName)
+{
+    char resolved[2000];
+    realpath(fileName.c_str(), resolved);
+    string abs_path = string(resolved);
+    string cwd = fs::current_path();
+
+    if(abs_path.substr(0, cwd.size()) == cwd)
+    {
+        fileName = abs_path.substr(cwd.size()+1,abs_path.size());
+        // cout<<fileName<<endl;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     string cmnd = "";
@@ -459,12 +480,32 @@ int main(int argc, char *argv[])
                 continue;
             }
             // add::addComplete(branchName, cmndArgs[i]);
-            add::addComplete(cmndArgs[i]);
+            
+            if(cmndArgs[i]== "." || getFileName(cmndArgs[i]))
+            {
+               add::addComplete(cmndArgs[i]); 
+                cout << "Adding " << cmndArgs[i] <<endl;
+            }
+            else
+            {
+                cout << "File " << cmndArgs[i] << " is outside of cwd\n";
+                msg = false;
+                continue;
+            }
+            // add::addComplete(cmndArgs[i]);
         }
         if (msg)
+        {
+            cout << "\033[0;32m";
             cout << "All the file/s are added successfully!\n";
-        else
-            cout << "All the remaning file/s are added successfully!\n";
+            cout << "\033[0m";
+        }
+        // else
+        // {
+        //     cout << "\033[0;32m";
+        //     cout << "All the remaning file/s are added successfully!\n";
+        //     cout << "\033[0m";
+        // }
     }
     else if (!vcs && cmndArgs[0] == "diff")
         cout << "VCS not initialized\n";
@@ -475,7 +516,9 @@ int main(int argc, char *argv[])
     else if (vcs && cmndArgs[0] == "log")
         log();
     else if (!vcs && cmndArgs[0] == "status")
+    {
         cout << "VCS not initialized\n";
+    }
     else if (vcs && cmndArgs[0] == "status")
         status::vcsCmndStatus();
     else if (!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2)
