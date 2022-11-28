@@ -387,6 +387,14 @@ void log()
     }
 }
 
+void error_print(string print)
+{
+    cout << "\033[1;31m";
+    cout << print << endl;
+    cout << "\033[0m";
+    return;
+}
+
 vector<string> parseCommands(string cmnd)
 {
     vector<string> args;
@@ -413,9 +421,9 @@ bool getFileName(string &fileName)
     string abs_path = string(resolved);
     string cwd = fs::current_path();
 
-    if(abs_path.substr(0, cwd.size()) == cwd)
+    if (abs_path.substr(0, cwd.size()) == cwd)
     {
-        fileName = abs_path.substr(cwd.size()+1,abs_path.size());
+        fileName = abs_path.substr(cwd.size() + 1, abs_path.size());
         // cout<<fileName<<endl;
         return true;
     }
@@ -439,16 +447,23 @@ int main(int argc, char *argv[])
 
     vector<string> cmndArgs = parseCommands(cmnd);
     if (!vcs && cmndArgs[0] == "init")
+    {
         handleInit(); // passing path as argument
+    }
+
     else if (vcs && cmndArgs[0] == "init")
+    {
         cout << "VCS already initialized\n";
+    }
 
     else if (cmndArgs[0] == "validate")
     {
         validPath(cmndArgs[1]); // passing path as argument
     }
     else if (!vcs && cmndArgs[0] == "commit" && cmndArgs.size() > 1)
-        cout << "VCS not initialized\n";
+    {
+        error_print("VCS not initialized");
+    }
     else if (vcs && cmndArgs[0] == "commit")
     {
         if (cmndArgs.size() > 1)
@@ -460,14 +475,19 @@ int main(int argc, char *argv[])
             cout << "Commit done successfully!\n";
         }
         else
-            cout << "Invalid command. Commit message not provided." << endl;
+        {
+            error_print("Invalid command. Commit message not provided.");
+        }
+
         // if(msg)
         //     cout << "All the file/s are added successfully!\n";
         // else
-        cout << "All the remaning file/s are added successfully!\n";
+        // cout << "All the remaning file/s are added successfully!\n";
     }
     else if (!vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
-        cout << "VCS not initialized\n";
+    {
+        error_print("VCS not initialized");
+    }
     else if (vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
     {
         bool msg = true;
@@ -480,11 +500,11 @@ int main(int argc, char *argv[])
                 continue;
             }
             // add::addComplete(branchName, cmndArgs[i]);
-            
-            if(cmndArgs[i]== "." || getFileName(cmndArgs[i]))
+
+            if (cmndArgs[i] == "." || getFileName(cmndArgs[i]))
             {
-               add::addComplete(cmndArgs[i]); 
-                cout << "Adding " << cmndArgs[i] <<endl;
+                add::addComplete(cmndArgs[i]);
+                cout << "Adding " << cmndArgs[i] << endl;
             }
             else
             {
@@ -508,19 +528,34 @@ int main(int argc, char *argv[])
         // }
     }
     else if (!vcs && cmndArgs[0] == "diff")
-        cout << "VCS not initialized\n";
-    else if (vcs && cmndArgs[0] == "diff")
+    {
+        error_print("VCS not initialized");
+    }
+    else if (vcs && cmndArgs[0] == "diff" && cmndArgs.size()==2)
+    {
         diff::difference_between_two(cmndArgs[1]);
+    }
+        
     else if (!vcs && cmndArgs[0] == "log")
-        cout << "VCS not initialized\n";
+    {
+        error_print("VCS not initialized");
+    }
     else if (vcs && cmndArgs[0] == "log")
+    {
         log();
+    }
     else if (!vcs && cmndArgs[0] == "status")
-        cout << "VCS not initialized\n";
+    {
+        error_print("VCS not initialized");
+    }
     else if (vcs && cmndArgs[0] == "status")
+    {
         status::vcsCmndStatus();
+    }
     else if (!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2)
-        cout << "VCS not initialized\n";
+    {
+        error_print("VCS not initialized");
+    }
     else if (vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2)
     {
         // string tempPath = "./.vcs/" + to_string(versionNo);
@@ -529,7 +564,7 @@ int main(int argc, char *argv[])
         // }
         if (commitHexMap.find(cmndArgs[1]) == commitHexMap.end())
         {
-            cout << "No such commit id found\n";
+            error_print("No such commit id found");
             return 0;
         }
         cout << "Commiting current directory status before rolling back\n";
@@ -538,26 +573,45 @@ int main(int argc, char *argv[])
         rollback::rollback(to_string(commitHexMap[cmndArgs[1]]), "./", versionNo);
         cout << "Rollback done to commit " << cmndArgs[1] << endl;
     }
-    else if (vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "-a" && cmndArgs.size() == 3){
-        if(versionNo <= stoi(cmndArgs[2]))
-            cout << "Commit not found.\n";
+    else if (vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "-a" && cmndArgs.size() == 3)
+    {
+        if (versionNo <= stoi(cmndArgs[2]))
+        {
+            error_print("Commit not found.");
+        }
         else
+        {
             cout << "Commit Id: " << commitInfoMap[stoi(cmndArgs[2])].hexCode << endl;
+        }
     }
     else if (!vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "-a" && cmndArgs.size() == 3)
-        cout << "VCS not initialized\n";
-    else if (vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "SHA" && cmndArgs.size() == 3){
-        if(versionNo <= stoi(cmndArgs[2]))
-            cout << "Commit not found.\n";
+    {
+        error_print("VCS not initialized.");
+    }
+    else if (vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "SHA" && cmndArgs.size() == 3)
+    {
+        if (versionNo <= stoi(cmndArgs[2]))
+        {
+            error_print("Commit not found.");
+        }
         else
+        {
             cout << "Commit Id: " << commitInfoMap[stoi(cmndArgs[2])].commitSHA << endl;
+        }
     }
     else if (!vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "SHA" && cmndArgs.size() == 3)
-        cout << "VCS not initialized\n";
+    {
+        error_print("VCS not initialized.");
+    }
     else if (vcs && cmndArgs[0] == ":exit")
+    {
         return 0;
+    }
+
     else
-        cout << "Invalid Command\n";
+    {
+        error_print("Invalid Command.");
+    }
     cout << endl;
     return 0;
 }

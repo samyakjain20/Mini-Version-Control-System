@@ -38,7 +38,7 @@ namespace rollback
         // char resolved[3000];
         // realpath(check_path.c_str(), resolved);
         string abs_path = check_path;
-        cout << "Absolute Path: " << abs_path << endl;
+        // cout << "Absolute Path: " << abs_path << endl;
         vector<string> directories_in_path;
         string temp;
         // version_path=version_path.substr(0,version_path.size()-1);
@@ -58,7 +58,7 @@ namespace rollback
         directories_in_path.push_back(temp);
         string temp_path = version_path;
         string rm_path = ".";
-        cout << "Version path : " << version_path << endl;
+        // cout << "Version path : " << version_path << endl;
         for (auto i : directories_in_path)
         {
             // cout << "Here " << i << endl;
@@ -71,8 +71,8 @@ namespace rollback
 
             if (fs::exists(temp_path))
             {
-                cout << "This exist in vcs : " << temp_path << endl;
-                continue;
+                // cout << "This exist in vcs : " << temp_path << endl;
+                // continue;
             }
             else
             {
@@ -83,7 +83,7 @@ namespace rollback
                 return true;
             }
         }
-        cout << "End of removee ir" << endl;
+        // cout << "End of removee ir" << endl;
         return false;
     }
     int createdir(string path1)
@@ -99,11 +99,11 @@ namespace rollback
     void create_dir_structure(string check_path)
     {
         string cwd = fs::current_path();
-        cout << check_path << endl;
+        // cout << check_path << endl;
         // char resolved[3000];
         // realpath(check_path.c_str(), resolved);
         string abs_path = check_path;
-        cout << "Absolute Path: " << abs_path << endl;
+        // cout << "Absolute Path: " << abs_path << endl;
         vector<string> directories_in_path;
         string temp;
         for (int i = 0; i < (int)abs_path.size(); i++)
@@ -119,7 +119,7 @@ namespace rollback
             }
         }
         string temp_path = cwd;
-        cout << cwd << endl;
+        // cout << cwd << endl;
         for (auto i : directories_in_path)
         {
             // cout << "Here " << i << endl;
@@ -143,7 +143,7 @@ namespace rollback
         struct dirent *sd;
         // cout << "Inside dir: ";
         string fullPath = path + dirName;
-        cout << fullPath << endl;
+        // cout << fullPath << endl;
         // string version_path = vcspath + "/" + fullPath;
 
         // cout << fullPath << endl;
@@ -152,8 +152,8 @@ namespace rollback
         {
             if (check_if_dir_struct_exists(fullPath, version_path))
             {
-                cout << fullPath << endl;
-                cout << "True" << endl;
+                // cout << fullPath << endl;
+                // cout << "True" << endl;
                 return;
             }
         }
@@ -187,8 +187,8 @@ namespace rollback
         DIR *dir1, *dir2, *dir;
         struct dirent *sd;
 
-        cout << "Version Path : " << version_path << endl;
-        cout << "Current path : " << curr_path << endl;
+        // cout << "Version Path : " << version_path << endl;
+        // cout << "Current path : " << curr_path << endl;
         dir1 = opendir(version_path.c_str());
         dir2 = opendir(curr_path.c_str());
 
@@ -236,9 +236,9 @@ namespace rollback
 
                 if (fs::is_directory(currFile.c_str()))
                 {
-                    cout << "Before The Old Dirctory Name is : "<< sd->d_name << endl;
+                    // cout << "Before The Old Dirctory Name is : "<< sd->d_name << endl;
                     getFileRecursive(old, version_path, sd->d_name, 0);
-                    cout << "After The Old Dirctory Name is : "<<sd->d_name << endl;
+                    // cout << "After The Old Dirctory Name is : "<<sd->d_name << endl;
                 }
 
                 else
@@ -247,15 +247,15 @@ namespace rollback
             // cout << "old " << sd->d_name << endl;
         }
 
-        for (auto it : old)
-        {
-            cout << "old : " << it << endl;
-        }
+        // for (auto it : old)
+        // {
+        //     cout << "old : " << it << endl;
+        // }
 
-        for (auto it : latest)
-        {
-            cout << "current : " << it << endl;
-        }
+        // for (auto it : latest)
+        // {
+        //     cout << "current : " << it << endl;
+        // }
 
         for (auto it : latest)
         {
@@ -282,7 +282,7 @@ namespace rollback
                 // cout<<"Here"<<endl;
                 // if (ud.good())
                 // {
-                cout << command << endl;
+                // cout << command << endl;
                 system(command.c_str());
                 // }
                 // else
@@ -312,7 +312,7 @@ namespace rollback
         {
 
             cout<<"Rolling Backing to : "<<total_commits-1-i<<endl;
-            cout<<"----------------------------------------------------------------------------------"<<endl;
+            // cout<<"----------------------------------------------------------------------------------"<<endl;
             version_path = vcspath + "/" + to_string(total_commits-1-i) + "/";
             go_to_previous(version_path, curr_path);
             count--;
