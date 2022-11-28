@@ -28,8 +28,66 @@ namespace rollback
     namespace fs = std::filesystem;
 
     string vcspath = "./.vcs";
+    string version_path = vcspath;
 
-    int createdir(string path1){
+    bool check_if_dir_struct_exists(string check_path, string version_path)
+    {
+
+        string cwd = fs::current_path();
+        // cout<<"Check "<<check_path<<endl;
+        char resolved[3000];
+        // realpath(check_path.c_str(), resolved);
+        string abs_path = check_path;
+        cout << "Absolute Path: " << abs_path << endl;
+        vector<string> directories_in_path;
+        string temp;
+        // version_path=version_path.substr(0,version_path.size()-1);
+
+        for (int i = 0; i < (int)abs_path.size(); i++)
+        {
+            if (abs_path[i] != '/')
+            {
+                temp += abs_path[i];
+            }
+            else
+            {
+                directories_in_path.push_back(temp);
+                temp = "";
+            }
+        }
+        directories_in_path.push_back(temp);
+        string temp_path = version_path;
+        string rm_path = ".";
+        cout << "Version path : " << version_path << endl;
+        for (auto i : directories_in_path)
+        {
+            // cout << "Here " << i << endl;
+
+            if (i == ".")
+                continue;
+
+            temp_path = temp_path + "/" + i;
+            rm_path = rm_path + "/" + i;
+
+            if (fs::exists(temp_path))
+            {
+                cout << "This exist in vcs : " << temp_path << endl;
+                continue;
+            }
+            else
+            {
+                string remove_command = "rmdir -r " + rm_path;
+                // system(create_command.c_str());
+                cout << remove_command << endl;
+                // break;
+                return true;
+            }
+        }
+        cout << "End of removee ir" << endl;
+        return false;
+    }
+    int createdir(string path1)
+    {
         int check;
         check = mkdir(path1.c_str(), 0777);
         if (check == 0)
@@ -38,11 +96,13 @@ namespace rollback
             return -1;
     }
 
-    void create_dir_structure(string check_path){
+    void create_dir_structure(string check_path)
+    {
         string cwd = fs::current_path();
+        cout << check_path << endl;
         char resolved[3000];
-        realpath(check_path.c_str(), resolved);
-        string abs_path = string(resolved);
+        // realpath(check_path.c_str(), resolved);
+        string abs_path = check_path;
         cout << "Absolute Path: " << abs_path << endl;
         vector<string> directories_in_path;
         string temp;
@@ -59,6 +119,7 @@ namespace rollback
             }
         }
         string temp_path = cwd;
+        cout << cwd << endl;
         for (auto i : directories_in_path)
         {
             // cout << "Here " << i << endl;
@@ -75,15 +136,28 @@ namespace rollback
         }
     }
 
-    void getFileRecursive(vector<string> &st, string path, string dirName)
+    void getFileRecursive(vector<string> &st, string path, string dirName, int mode)
     {
+
         DIR *dir;
         struct dirent *sd;
         // cout << "Inside dir: ";
         string fullPath = path + dirName;
+        cout << fullPath << endl;
+        // string version_path = vcspath + "/" + fullPath;
+
         // cout << fullPath << endl;
         dir = opendir(fullPath.c_str());
-
+        if (fs::is_empty(fullPath) && mode)
+        {
+            if (check_if_dir_struct_exists(fullPath, version_path))
+            {
+                cout << fullPath << endl;
+                cout << "True" << endl;
+                return;
+            }
+        }
+        // sd = readdir(dir);
         while ((sd = readdir(dir)) != NULL)
         {
             string currFile = sd->d_name;
@@ -99,7 +173,7 @@ namespace rollback
                 if (fs::is_directory(currFile.c_str()))
                 {
                     // cout << "recur " << dirName + "/" + sd->d_name << endl;
-                    getFileRecursive(st, path, dirName + "/" + sd->d_name);
+                    getFileRecursive(st, path, dirName + "/" + sd->d_name, mode);
                 }
                 else
                     st.push_back(dirName + "/" + sd->d_name);
@@ -218,7 +292,7 @@ namespace rollback
                 stat(currFile.c_str(), &sfile);
 
                 if (fs::is_directory(currFile.c_str()))
-                    getFileRecursive(latest, curr_path, sd->d_name);
+                    getFileRecursive(latest, curr_path, sd->d_name, 1);
                 else
                     latest.push_back(sd->d_name);
             }
@@ -239,22 +313,26 @@ namespace rollback
                 stat(currFile.c_str(), &sfile);
 
                 if (fs::is_directory(currFile.c_str()))
-                    getFileRecursive(old, version_path, sd->d_name);
+                {
+                    cout << "Before The Old Dirctory Name is : "<< sd->d_name << endl;
+                    getFileRecursive(old, version_path, sd->d_name, 0);
+                    cout << "After The Old Dirctory Name is : "<<sd->d_name << endl;
+                }
+
                 else
                     old.push_back(sd->d_name);
             }
             // cout << "old " << sd->d_name << endl;
         }
 
-
-        for(auto it : old)
+        for (auto it : old)
         {
-            cout<<"old : "<<it<<endl;
+            cout << "old : " << it << endl;
         }
 
-        for(auto it : latest)
+        for (auto it : latest)
         {
-            cout<<"current : "<<it<<endl;
+            cout << "current : " << it << endl;
         }
 
         for (auto it : latest)
@@ -272,8 +350,23 @@ namespace rollback
             else
             {
                 string command = "rm " + it;
+
+                // cout<<"Here Above"<<endl;
+                check_if_dir_struct_exists(it, version_path);
+
+                // cout<<"Here Above"<<endl;
+                // ifstream ud(it, ios::ate | ios::binary);
+
+                // cout<<"Here"<<endl;
+                // if (ud.good())
+                // {
                 cout << command << endl;
                 system(command.c_str());
+                // }
+                // else
+                // {
+                //     cout << "Ignoring the file presented in deleted folder " << endl;
+                // }
             }
         }
 
@@ -285,16 +378,26 @@ namespace rollback
         }
     }
 
-    void rollback(string version_no, string curr_path, int totalCommitsByFar)
+    void rollback(string version_no, string curr_path,int total_commits)
     {
-        string version_path = "./.vcs/" + version_no + "/";
+        // string version_path = "./.vcs/" + version_no + "/";
+        // version_path = vcspath + "/" + version_no + "/";
 
-        int count = 1; // Number of times to rollback
 
+        int count = total_commits - stoi(version_no) -1 ; // Number of times to rollback
+        int i = 1;
         while (count > 0)
         {
+
+            cout<<"Rolling Backing to : "<<total_commits-1-i<<endl;
+            cout<<"----------------------------------------------------------------------------------"<<endl;
+            version_path = vcspath + "/" + to_string(total_commits-1-i) + "/";
             go_to_previous(version_path, curr_path);
             count--;
+            i++;
+            // int vno = stoi(version_no);
+            // vno--;
+            // version_no = to_string(vno);
         }
 
         return;
