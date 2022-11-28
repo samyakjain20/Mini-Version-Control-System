@@ -516,9 +516,7 @@ int main(int argc, char *argv[])
     else if (vcs && cmndArgs[0] == "log")
         log();
     else if (!vcs && cmndArgs[0] == "status")
-    {
         cout << "VCS not initialized\n";
-    }
     else if (vcs && cmndArgs[0] == "status")
         status::vcsCmndStatus();
     else if (!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2)
@@ -540,10 +538,26 @@ int main(int argc, char *argv[])
         rollback::rollback(to_string(commitHexMap[cmndArgs[1]]), "./", versionNo);
         cout << "Rollback done to commit " << cmndArgs[1] << endl;
     }
+    else if (vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "-a" && cmndArgs.size() == 3){
+        if(versionNo <= stoi(cmndArgs[2]))
+            cout << "Commit not found.\n";
+        else
+            cout << "Commit Id: " << commitInfoMap[stoi(cmndArgs[2])].hexCode << endl;
+    }
+    else if (!vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "-a" && cmndArgs.size() == 3)
+        cout << "VCS not initialized\n";
+    else if (vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "SHA" && cmndArgs.size() == 3){
+        if(versionNo <= stoi(cmndArgs[2]))
+            cout << "Commit not found.\n";
+        else
+            cout << "Commit Id: " << commitInfoMap[stoi(cmndArgs[2])].commitSHA << endl;
+    }
+    else if (!vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "SHA" && cmndArgs.size() == 3)
+        cout << "VCS not initialized\n";
     else if (vcs && cmndArgs[0] == ":exit")
         return 0;
     else
         cout << "Invalid Command\n";
-
+    cout << endl;
     return 0;
 }

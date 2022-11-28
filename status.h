@@ -79,7 +79,6 @@ namespace status
 
         ifstream myfile;
         myfile.open(vcspath2);
-        int cnt = 0;
 
         if (!myfile.is_open())
         {
@@ -147,10 +146,10 @@ namespace status
         struct dirent *file = readdir(folder);
         while (file != NULL)
         {
-            if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vscode") == 0 || strcmp(file->d_name, "main.cpp") == 0 || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "commit.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0)
-                int a = 1;
-            else
-            {
+            if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vscode") == 0 || strcmp(file->d_name, "main.cpp") == 0 || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "commit.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "rollback.h") == 0 || strcmp(file->d_name, "a.out") == 0){
+
+            }
+            else{
                 string filepath = cwd + "/" + file->d_name;
                 string new_path = "./.vcs/0/" + string(file->d_name);
                 if (file->d_type == DT_DIR)
@@ -223,7 +222,9 @@ namespace status
         string output = "";
         if (name_of_del.size() == 0 && name_of_un.size() == 0 && name_of_track.size() == 0 && name_of_mod.size() == 0)
         {
-            output = "Nothing to commit\n";
+            cout << "\033[0;36m";
+            cout << "Working directory clean, nothing to commit\n";
+            cout << "\033[0m";
         }
         else
         {

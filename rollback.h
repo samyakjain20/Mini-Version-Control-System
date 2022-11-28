@@ -35,7 +35,7 @@ namespace rollback
 
         string cwd = fs::current_path();
         // cout<<"Check "<<check_path<<endl;
-        char resolved[3000];
+        // char resolved[3000];
         // realpath(check_path.c_str(), resolved);
         string abs_path = check_path;
         cout << "Absolute Path: " << abs_path << endl;
@@ -100,7 +100,7 @@ namespace rollback
     {
         string cwd = fs::current_path();
         cout << check_path << endl;
-        char resolved[3000];
+        // char resolved[3000];
         // realpath(check_path.c_str(), resolved);
         string abs_path = check_path;
         cout << "Absolute Path: " << abs_path << endl;
@@ -198,84 +198,6 @@ namespace rollback
             cout << "'.vcs' folder corrupted.\n";
             return;
         }
-
-        // set<string> previous, current; // stores path of all the files / directories
-
-        // dir = dir2;
-        // while ((sd = readdir(dir)) != NULL)
-        // {
-        //     string currFile = sd->d_name;
-        //     if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "main.cpp" || currFile == "rollback.h" )
-        //         continue;
-        //     else
-        //         current.insert(sd->d_name);
-        //     cout << "latest " << sd->d_name << endl;
-        // }
-
-        // dir = dir1;
-        // while ((sd = readdir(dir)) != NULL)
-        // {
-        //     string currFile = sd->d_name;
-
-        //     if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "main.cpp"  || currFile == "rollback.h" )
-        //         continue;
-        //     else
-        //         previous.insert(sd->d_name);
-        //     cout << "old " << sd->d_name << endl;
-        // }
-
-        // for (auto it1 : previous)
-        // {
-        //     struct stat sfile;
-        //     string currFile = version_path + "/" + it1;
-        //     int a = stat(currFile.c_str(), &sfile);
-        //     cout << currFile << " " << endl;
-        //     if ((sfile.st_mode & S_IFDIR))
-        //     {
-
-        //         DIR *dir;
-        //         struct dirent *sd;
-        //         dir = opendir(currFile.c_str());
-        //         previous.erase(previous.find(it1));
-
-        //         while ((sd = readdir(dir)) != NULL)
-        //             if (strcmp(sd->d_name, "..") == 0 || strcmp(sd->d_name, ".") == 0)
-        //                 continue;
-        //             else
-        //             {
-        //                 cout << sd->d_name << endl;
-        //                 previous.insert(it1 + "/" + sd->d_name);
-        //             }
-        //     }
-        // }
-        // cout << "1st done\n\n";
-
-        // for (auto it2 : current)
-        // {
-        //     struct stat sfile;
-        //     string currFile = curr_path + "/" + it2;
-        //     int a = stat(currFile.c_str(), &sfile);
-
-        //     cout << currFile << endl;
-
-        //     if ((sfile.st_mode & S_IFDIR))
-        //     {
-
-        //         DIR *dir;
-        //         struct dirent *sd;
-        //         dir = opendir(currFile.c_str());
-        //         current.erase(current.find(it2));
-
-        //         while ((sd = readdir(dir)) != NULL)
-        //             if (strcmp(sd->d_name, "..") == 0 || strcmp(sd->d_name, ".") == 0)
-        //                 continue;
-        //             else
-        //             {
-        //                 // cout << sd->d_name << endl;
-        //                 current.insert(it2 + "/" + sd->d_name);
-        //             }
-        //     }
-        // }
 
         vector<string> old, latest; // stores path of all the files / directories
         dir = dir2;
