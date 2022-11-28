@@ -43,6 +43,11 @@ namespace rollback
         string temp;
         // version_path=version_path.substr(0,version_path.size()-1);
 
+        if (!fs::exists(check_path))
+        {
+            return false;
+        }
+
         for (int i = 0; i < (int)abs_path.size(); i++)
         {
             if (abs_path[i] != '/')
@@ -61,8 +66,6 @@ namespace rollback
         // cout << "Version path : " << version_path << endl;
         for (auto i : directories_in_path)
         {
-            // cout << "Here " << i << endl;
-
             if (i == ".")
                 continue;
 
@@ -76,9 +79,9 @@ namespace rollback
             }
             else
             {
-                string remove_command = "rmdir -r " + rm_path;
-                // system(create_command.c_str());
-                cout << remove_command << endl;
+                string remove_command = "rm -r " + rm_path;
+                system(remove_command.c_str());
+                // cout << remove_command << endl;
                 // break;
                 return true;
             }
@@ -274,7 +277,11 @@ namespace rollback
                 string command = "rm " + it;
 
                 // cout<<"Here Above"<<endl;
-                check_if_dir_struct_exists(it, version_path);
+                if (check_if_dir_struct_exists(it, version_path))
+                {
+                    // cout << "HEre : " << command << endl;
+                    // system(command.c_str());
+                }
 
                 // cout<<"Here Above"<<endl;
                 // ifstream ud(it, ios::ate | ios::binary);
@@ -283,7 +290,7 @@ namespace rollback
                 // if (ud.good())
                 // {
                 // cout << command << endl;
-                system(command.c_str());
+
                 // }
                 // else
                 // {
@@ -300,20 +307,19 @@ namespace rollback
         }
     }
 
-    void rollback(string version_no, string curr_path,int total_commits)
+    void rollback(string version_no, string curr_path, int total_commits)
     {
         // string version_path = "./.vcs/" + version_no + "/";
         // version_path = vcspath + "/" + version_no + "/";
 
-
-        int count = total_commits - stoi(version_no) -1 ; // Number of times to rollback
+        int count = total_commits - stoi(version_no) - 1; // Number of times to rollback
         int i = 1;
         while (count > 0)
         {
 
-            cout<<"Rolling Backing to : "<<total_commits-1-i<<endl;
+            cout << "Rolling Backing to : " << total_commits - 1 - i << endl;
             // cout<<"----------------------------------------------------------------------------------"<<endl;
-            version_path = vcspath + "/" + to_string(total_commits-1-i) + "/";
+            version_path = vcspath + "/" + to_string(total_commits - 1 - i) + "/";
             go_to_previous(version_path, curr_path);
             count--;
             i++;
