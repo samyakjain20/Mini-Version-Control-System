@@ -31,6 +31,13 @@ namespace status
     map<string, string> currSHA;
     map<string, string> currTrackedSHA;
 
+    string getFileName(string fileName)
+    {
+        string cwd = fs::current_path();
+        // cout << cwd;
+        return fileName.substr(cwd.size() + 1, fileName.size());
+    }
+
     void getCurrentFileSHA(string fileLoc)
     {
 
@@ -60,14 +67,14 @@ namespace status
             ss << hex << setw(2) << setfill('0') << (int)completeFileSHA[i];
         }
         string fullFileSHA1 = ss.str();
-        cout << fileLoc << " sha is " << fullFileSHA1 << endl;
+        // cout << fileLoc << " sha is " << fullFileSHA1 << endl;
         currSHA[fileLoc] = fullFileSHA1;
     }
 
     // get previous files SHA from version.info
     void getPrevFilesSHA()
     {
-        cout<<"-----------------------------------"<<endl;
+
         string line;
 
         ifstream myfile;
@@ -76,6 +83,7 @@ namespace status
 
         if (!myfile.is_open())
         {
+
             perror("Error open");
             return;
         }
@@ -88,7 +96,7 @@ namespace status
 
             string fileLoc = fileData.substr(0, pos);
             string fileSHA = fileData.substr(pos + 1);
-            cout << fileLoc << " " << fileSHA << endl;
+            // cout << fileLoc << " " << fileSHA << endl;
             char resolved[2000];
             realpath(fileLoc.c_str(), resolved);
             string abs_path = string(resolved);
@@ -97,7 +105,7 @@ namespace status
         myfile.close();
 
         ifstream myfile1;
-        cout << "going for path1 ?" << endl;
+        // cout << "going for path1 ?" << endl;
         myfile1.open(vcspath1);
         if (!myfile1.is_open())
         {
@@ -107,7 +115,7 @@ namespace status
         // get files SHA from tracked_current
         while (getline(myfile1, line))
         {
-            cout<<"COMING INSIDE";
+            // cout << "COMING INSIDE";
 
             string fileData = line;
             int pos = fileData.find("$");
@@ -116,9 +124,9 @@ namespace status
             char resolved[2000];
             realpath(fileLoc.c_str(), resolved);
             string abs_path = string(resolved);
-            cout << fileLoc << " " << fileSHA << endl;
+            // cout << fileLoc << " " << fileSHA << endl;
             previousSHA[abs_path] = fileSHA;
-            cout << "Adding SHA to " << abs_path << endl;
+            // cout << "Adding SHA to " << abs_path << endl;
             currTrackedSHA[abs_path] = fileSHA;
         }
 
@@ -127,7 +135,7 @@ namespace status
 
     void traverseFiles(string cwd)
     {
-        cout<<"+++++++++++++++++++++++++++++++++++++++"<<endl;
+        // cout << "+++++++++++++++++++++++++++++++++++++++" << endl;
         // get current files SHA
         DIR *folder = opendir(cwd.c_str());
         if (folder == NULL)
@@ -139,15 +147,15 @@ namespace status
         struct dirent *file = readdir(folder);
         while (file != NULL)
         {
-            if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vscode") == 0 || strcmp(file->d_name, "main.cpp") == 0 || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "commit.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "rollback.h") == 0 || strcmp(file->d_name, "a.out") == 0)
-                cout << "ignore" << endl;
+            if (strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0 || strcmp(file->d_name, ".vcs") == 0 || strcmp(file->d_name, ".git") == 0 || strcmp(file->d_name, ".vscode") == 0 || strcmp(file->d_name, "main.cpp") == 0 || strcmp(file->d_name, "add.h") == 0 || strcmp(file->d_name, "commit.h") == 0 || strcmp(file->d_name, "diff.h") == 0 || strcmp(file->d_name, "status.h") == 0 || strcmp(file->d_name, "a.out") == 0)
+                int a = 1;
             else
             {
                 string filepath = cwd + "/" + file->d_name;
                 string new_path = "./.vcs/0/" + string(file->d_name);
                 if (file->d_type == DT_DIR)
                 {
-                    cout << "Directory" << filepath << endl;
+                    // cout << "Directory" << filepath << endl;
                     traverseFiles(filepath);
                 }
                 else
@@ -165,17 +173,17 @@ namespace status
         string un_tracked = "Untracked Files:\n";
         string deleted_file = "Deleted Files:\n";
         string modified_file = "Modified Files:\n";
-        string tracked_file = "Tracked Files: \n";
+        string tracked_file = "Staged Files: \n";
         string name_of_un = "";
         string name_of_del = "";
         string name_of_mod = "";
         string name_of_track = "";
         if (previous_sha.size() != 0)
         {
-            cout << "Inside" << endl;
+            // cout << "Inside" << endl;
             for (auto i : previous_sha)
             {
-                cout << "file path is:--> " << i.first << endl;
+                // cout << "file path is:--> " << i.first << endl;
                 if (current_sha.count(i.first) > 0)
                 {
                     if (current_sha[i.first] == previous_sha[i.first])
@@ -185,35 +193,35 @@ namespace status
                     }
                     else
                     {
-                        name_of_mod += (i.first);
+                        name_of_mod += "\t modified: " + (getFileName(i.first));
                         name_of_mod += "\n";
                         // cout << "Modified file-->>" << name_of_mod;
                     }
                 }
                 else
                 {
-                    name_of_del += (i.first);
+                    name_of_del += "\t deleted: " + (getFileName(i.first));
                     name_of_del += "\n";
                 }
             }
-            for (auto i : current_sha)
+        }
+        for (auto i : current_sha)
+        {
+            if (previous_sha.count(i.first) == 0)
             {
-                if (previous_sha.count(i.first) == 0)
-                {
-                    name_of_un += (i.first);
-                    name_of_un += "\n";
-                }
+                name_of_un += "\t untracked: " + (getFileName(i.first));
+                name_of_un += "\n";
             }
-            for (auto i : currTrackedSHA)
-            {
+        }
+        for (auto i : currTrackedSHA)
+        {
 
-                name_of_track += (i.first);
-                name_of_track += "\n";
-            }
+            name_of_track += "\t staged: " + (getFileName(i.first));
+            name_of_track += "\n";
         }
 
         string output = "";
-        if (currTrackedSHA.size() == 0)
+        if (name_of_del.size() == 0 && name_of_un.size() == 0 && name_of_track.size() == 0 && name_of_mod.size() == 0)
         {
             output = "Nothing to commit\n";
         }
@@ -221,6 +229,7 @@ namespace status
         {
             output += tracked_file;
             output += name_of_track;
+            output += "\n";
             output += un_tracked;
             output += name_of_un;
             output += "\n";
@@ -236,7 +245,7 @@ namespace status
 
     void vcsCmndStatus()
     {
-        cout << "changes being made" << endl;
+        // cout << "changes being made" << endl;
         getPrevFilesSHA();
         string cwd = fs::current_path();
         traverseFiles(cwd);
