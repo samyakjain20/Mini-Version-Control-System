@@ -581,7 +581,9 @@ int main(int argc, char *argv[])
         }
         else
         {
+            cout << "\033[1;36m";
             cout << "Commit Id: " << commitInfoMap[stoi(cmndArgs[2])].hexCode << endl;
+            cout << "\033[0m";
         }
     }
     else if (!vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "-a" && cmndArgs.size() == 3)
@@ -596,7 +598,9 @@ int main(int argc, char *argv[])
         }
         else
         {
-            cout << "Commit Id: " << commitInfoMap[stoi(cmndArgs[2])].commitSHA << endl;
+            cout << "\033[1;36m";
+            cout << "Commit SHA: " << commitInfoMap[stoi(cmndArgs[2])].commitSHA << endl;
+            cout << "\033[0m";
         }
     }
     else if (!vcs && cmndArgs[0] == "retrieve" && cmndArgs[1] == "SHA" && cmndArgs.size() == 3)
