@@ -15,6 +15,7 @@ using namespace std;
 namespace fs = std::filesystem;
 bool vcs = false; // indicating if there is vcsfolder cerated
 int versionNo;
+string branchName = "main";
 
 bool validPath(string &path){
     char resPath[300];
@@ -85,16 +86,29 @@ void handleInit(){
     }
     int err = mkdir(".vcs", 0777);
     if (err != -1){
-        string temp = "./.vcs/" + to_string(versionNo);
-        if (mkdir(temp.c_str(), 0777) == -1){
-            cerr << "Error creating vcs -> 0 :  " << strerror(errno) << endl;
-            return ;
-        }
+        string temp = "./.vcs/0";
+        // if (mkdir(temp.c_str(), 0777) != -1){
+        //     temp = "./.vcs/main/" + to_string(versionNo);
+            if (mkdir(temp.c_str(), 0777) == -1){
+                cerr << "Error creating .vcs/0 -> 0 :  " << strerror(errno) << endl;
+                return ;
+            }
+        // }
+        // else{
+        //     cerr << "Error creating .vcs -> 0 :  " << strerror(errno) << endl;
+        //     return ;
+        // }
     }
     else{
         cerr << "Error creating vcs :  " << strerror(errno) << endl;
         return ;
     }
+    // string temp = "./.vcs/";
+    // if (mkdir(temp.c_str(), 0777) == -1){
+    //     cerr << "Error creating .vcs/main -> 0 :  " << strerror(errno) << endl;
+    //     return ;
+    // }
+
     cout << "VCS initialised..\n" ;
     vcs = true;
 
@@ -175,6 +189,32 @@ void getFileRecursive(vector<string> &st, string path, string dirName){
     }
     // cout << "going out\n";
 }
+void changes_on_commit()
+{
+    string vcspath1 = "./.vcs/tracked_current.txt";
+    string vcspath2 = "./.vcs/tracked_history.txt";
+    ifstream vfile1;
+    ofstream vfile2;
+    vfile1.open(vcspath1);
+    vfile2.open(vcspath2, std::ios_base::in | std::ios_base::out | std::ios_base::app);
+    if (!vfile1.is_open() && !vfile2.is_open())
+    {
+        perror("Error open");
+        return;
+    }
+    string line;
+    while (getline(vfile1, line))
+    {
+        vfile2 << line;
+        vfile2 << "\n";
+    }
+    vfile1.close();
+    vfile2.close();
+    std::ofstream ofs;
+    ofs.open(vcspath1, std::ofstream::out | std::ofstream::trunc);
+    ofs.close();
+}
+
 void handleCommit(string commitMsg){
     // will create patch
     if (versionNo > 0){
@@ -261,6 +301,7 @@ void handleCommit(string commitMsg){
     fstream file(fileName.c_str(), ios::in | ios::app);
     file.write(temp.c_str(), temp.size());
     file.close();
+    changes_on_commit();
 
     string currHex = generateHex();
     while (commitHexMap.find(currHex) != commitHexMap.end())
@@ -336,20 +377,41 @@ int main(int argc, char *argv[]){
     else if(cmndArgs[0] == "validate" ){
         validPath(cmndArgs[1]); // passing path as argument
     }
-    else if(!vcs && cmndArgs[0] == "commit")
+    else if(!vcs && cmndArgs[0] == "commit" && cmndArgs.size() > 1)
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "commit"){
-        string commitMsg = "";
-        for(int i = 1; i < (int)cmndArgs.size(); i++)
-            commitMsg += cmndArgs[i] + " ";
-        handleCommit(commitMsg.substr(0, commitMsg.size() - 1)); // passing path as argument
-        cout << "Commit done successfully!\n";
+    else if(vcs && cmndArgs[0] == "commit" && cmndArgs.size() > 1){
+        bool msg = true;
+        for(int i = 1; i < (int)cmndArgs.size(); i++){
+            if( fs::exists(cmndArgs[i]) == false){
+                cout << "File "<< cmndArgs[i] <<" not present...\n";
+                msg = false;
+                continue;
+            }
+            // add::addComplete(branchName, cmndArgs[i]);
+            add::addComplete(cmndArgs[i]);
+        }
+        if(msg)
+            cout << "All the file/s are added successfully!\n";
+        else
+            cout << "All the remaning file/s are added successfully!\n";
     }
     else if(!vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1)
         cout << "VCS not initialized\n";
     else if(vcs && cmndArgs[0] == "add" && cmndArgs.size() > 1){
-        for(int i = 1; i < (int)cmndArgs.size(); i++)
+        bool msg = true;
+        for(int i = 1; i < (int)cmndArgs.size(); i++){
+            if( fs::exists(cmndArgs[i]) == false){
+                cout << "File "<< cmndArgs[i] <<" not present...\n";
+                msg = false;
+                continue;
+            }
+            // add::addComplete(branchName, cmndArgs[i]);
             add::addComplete(cmndArgs[i]);
+        }
+        if(msg)
+            cout << "All the file/s are added successfully!\n";
+        else
+            cout << "All the remaning file/s are added successfully!\n";
     }
     else if(!vcs && cmndArgs[0] == "diff")
         cout << "VCS not initialized\n";
@@ -363,9 +425,9 @@ int main(int argc, char *argv[]){
         cout << "VCS not initialized\n";
     else if(vcs && cmndArgs[0] == "status")
         status::vcsCmndStatus();
-    else if(!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() > 1)
+    else if(!vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2)
         cout << "VCS not initialized\n";
-    else if(vcs && cmndArgs[0] == "rollback" && cmndArgs.size() > 1){
+    else if(vcs && cmndArgs[0] == "rollback" && cmndArgs.size() == 2){
         // string tempPath = "./.vcs/" + to_string(versionNo);
         // if(!(fs::is_empty(tempPath)){
         //     cout << "Working directory not clean, "
