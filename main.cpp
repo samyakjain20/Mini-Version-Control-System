@@ -187,7 +187,7 @@ void getFileRecursive(vector<string> &st, string path, string dirName)
     while ((sd = readdir(dir)) != NULL)
     {
         string currFile = sd->d_name;
-        if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
+        if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "vcs" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
             continue;
         else
         {
@@ -257,7 +257,7 @@ void handleCommit(string commitMsg)
         while ((sd = readdir(dir)) != NULL)
         {
             string currFile = sd->d_name;
-            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
+            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "vcs" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
                 continue;
             else
             {
@@ -283,7 +283,7 @@ void handleCommit(string commitMsg)
         {
             string currFile = sd->d_name;
             // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name);
-            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
+            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "vcs" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
                 continue;
             else
             {
@@ -367,12 +367,16 @@ void handleCommit(string commitMsg)
 }
 void log()
 {
+    int i = 0;
     for (auto it = commitInfoMap.begin(); it != commitInfoMap.end(); it++)
     {
         struct commitData cmt = it->second;
 
         cout << "\033[1;36m";
-        cout << "Commit " << cmt.commitSHA << endl;
+        cout << "Commit " << cmt.commitSHA;
+        cout << "\033[0m";
+        cout << "\033[1;31m";
+        cout << "  (Version " << i << ")" << endl;
         cout << "\033[0m";
         cout << "\033[1;37m";
         cout << "Date: " << cmt.timeStamp;
@@ -384,6 +388,7 @@ void log()
         cout << "\033[1;32m";
         cout << cmt.message << "\n\n";
         cout << "\033[0m";
+        i++;
     }
 }
 
@@ -531,11 +536,11 @@ int main(int argc, char *argv[])
     {
         error_print("VCS not initialized");
     }
-    else if (vcs && cmndArgs[0] == "diff" && cmndArgs.size()==2)
+    else if (vcs && cmndArgs[0] == "diff" && cmndArgs.size() == 2)
     {
         diff::difference_between_two(cmndArgs[1]);
     }
-        
+
     else if (!vcs && cmndArgs[0] == "log")
     {
         error_print("VCS not initialized");

@@ -164,7 +164,7 @@ namespace rollback
         while ((sd = readdir(dir)) != NULL)
         {
             string currFile = sd->d_name;
-            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
+            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "vcs" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
                 continue;
             else
             {
@@ -208,7 +208,7 @@ namespace rollback
         {
             string currFile = sd->d_name;
             // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name);
-            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
+            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "vcs" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp" || currFile == "rollback.h")
                 continue;
             else
             {
@@ -229,7 +229,7 @@ namespace rollback
         {
             string currFile = sd->d_name;
             // string fileDetails = getFileDetails(dir_to_search + '/'+sd->d_name);
-            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "a.out" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
+            if (currFile == ".." || currFile == "." || currFile == ".vcs" || currFile == "add.h" || currFile == "commit.h" || currFile == "status.h" || currFile == "diff.h" || currFile == "vcs" || currFile == ".git" || currFile == ".vscode" || currFile == "main.cpp")
                 continue;
             else
             {

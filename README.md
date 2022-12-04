@@ -1,8 +1,9 @@
 # Mini - Version Control System
-We built a mini version control system. Version control software keeps track of every modification to the code in a special kind of database. If a mistake is made, developers can turn back the clock and compare earlier versions of the code to help fix the mistake while minimizing disruption to all team members. 
+Built a mini version control system. Every change to the code is recorded by version control software in a particular form of database. When a mistake is made, engineers can go back to an earlier version of the code to help correct it with the least amount of interruption to the entire team.
 
-We can run commands like 'init', 'add', 'commit', 'log', 'status, 'diff', 'rollback', 'retrieve -a' and 'retrieve SHA'.
+Implemented commands like 'init', 'add', 'commit', 'log', 'status, 'diff', 'rollback', 'retrieve -a' and 'retrieve SHA'.
 
+Github link - https://github.com/samyakjain20/Mini-Version-Control-System
 
 
 ## Following are commands that are implemented:
